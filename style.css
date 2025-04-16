@@ -1,0 +1,176 @@
+/* General Body Styling */
+body {
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(to right, #5be1eb, #7bfefe); /* Gradient background */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    height: 100vh;
+    overflow: hidden;
+    color: #333;
+    box-sizing: border-box;
+}
+
+/* Container for all content */
+.container {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    text-align: center;
+    max-width: 800px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Header Section */
+header {
+    color: #4CAF50;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    font-size: 3em;
+    margin-bottom: 10px;
+}
+
+header p {
+    font-size: 1.4em;
+    color: #888;
+}
+
+/* Today's Log Section */
+#todayLog {
+    margin-bottom: 30px;
+}
+
+#clock {
+    font-size: 3.5em;
+    font-weight: bold;
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f1f1f1;
+    border-radius: 10px;
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* Buttons Section */
+.buttons-section {
+    margin: 20px 0;
+}
+
+button {
+    padding: 15px 30px;
+    font-size: 1.5em;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    margin: 10px;
+    transition: background-color 0.3s ease, transform 0.3s ease; /* Added transition for button resizing */
+    width: 48%;
+}
+
+button#clockIn {
+    background-color: #4CAF50; /* Green */
+    color: white;
+}
+
+button#clockIn:hover {
+    background-color: #45a049;
+}
+
+button#clockOut {
+    background-color: #f44336; /* Red */
+    color: white;
+}
+
+button#clockOut:hover {
+    background-color: #e53935;
+}
+
+button:disabled {
+    background-color: #d3d3d3;
+    color: #888;
+    cursor: not-allowed;
+    transform: scale(1.05); /* Slight grow effect when disabled */
+}
+
+button.disabled {
+    background-color: #d3d3d3 !important; /* Keep the disabled button grey */
+    color: #888;
+    transform: scale(1.1); /* Slightly increase the size when disabled */
+}
+
+/* Log Section for Today's and Previous Logs */
+#todayDetails {
+    font-size: 1.2em;
+    color: #555;
+}
+
+.previous-logs-section {
+    margin-top: 40px;
+    text-align: left;
+}
+
+.toggle-logs-button {
+    padding: 10px 20px;
+    background-color: #ff9800; /* Orange */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s ease;
+}
+
+.toggle-logs-button:hover {
+    background-color: #fb8c00;
+}
+
+.logs-list {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 20px;
+}
+
+.log-item {
+    background-color: #e1f5fe; /* Light Blue */
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.today-log {
+    background-color: #c8e6c9; /* Light Green */
+}
+
+/* Responsive Design for Screens above 768px */
+@media (min-width: 768px) {
+    .container {
+        width: 75%;
+        padding: 40px;
+    }
+
+    button {
+        font-size: 1.4em;
+        padding: 20px 40px;
+    }
+
+    #clock {
+        font-size: 3.5em;
+    }
+}
+
+@media (min-width: 1024px) {
+    .container {
+        width: 60%;
+    }
+
+}
