@@ -8,7 +8,15 @@
 </head>
 <body>   
   <div class="login-container">
-    <img src="static/logo.png" alt="Morabu Logo" style="width: 350px; margin-bottom: 10px;"/>
+    <div class="toggle-wrapper">
+      <label class="switch">
+        <input type="checkbox" id="darkModeSwitch">
+        <span class="slider round"></span>
+      </label>
+    </div>
+    
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Morabu Logo" class="logo" />
+
     <h2>Login to Morabu</h2>
     <!-- Stage 1: Login -->
     <form id="loginForm">
@@ -34,6 +42,21 @@
 
     <p id="message"></p>
   </div>
+  <script>
+    const darkModeSwitch = document.getElementById("darkModeSwitch");
+  
+    // Load and apply stored theme
+    if (localStorage.getItem("theme") === "dark") {
+      document.body.classList.add("dark");
+      darkModeSwitch.checked = true;
+    }
+  
+    darkModeSwitch.addEventListener("change", () => {
+      document.body.classList.toggle("dark");
+      localStorage.setItem("theme", darkModeSwitch.checked ? "dark" : "light");
+    });
+  </script>
+  
 
   <script>
     const loginForm = document.getElementById("loginForm");

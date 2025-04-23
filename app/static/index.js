@@ -22,3 +22,4 @@ async function sendOTP() {
     resultEl.innerText = `❌ Request failed: ${err.message}`;
   }
 }
+

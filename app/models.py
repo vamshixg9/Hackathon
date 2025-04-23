@@ -1,0 +1,103 @@
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime, date
+
+db = SQLAlchemy()
+
+class User(db.Model):
+    __tablename__ = 'users'
+
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
+    name = db.Column(db.String(100))
+    department = db.Column(db.String(100))
+    role = db.Column(db.String(20), default='employee')  # 'admin' or 'employee'
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    manager_id    = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    # relationship to let an admin see their managers/employees:
+    team_members  = db.relationship('User', backref=db.backref('manager', remote_side=[id]))
+
+    # Relationship to attendance records
+    attendance_records = db.relationship('Attendance', back_populates='user')
+
+    def __repr__(self):
+        return f"<User {self.email} | {self.role}>"
+
+class Attendance(db.Model):
+    __tablename__ = 'attendance'
+
+    id              = db.Column(db.Integer, primary_key=True)
+    user_id         = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    checkin_time    = db.Column(db.DateTime, nullable=True)
+    checkout_time   = db.Column(db.DateTime, nullable=True)
+    location        = db.Column(db.String(256))
+    qr_token        = db.Column(db.String(256))  # For verifying QR check-in/out
+    date            = db.Column(db.Date, default=date.today)
+
+    # New fields
+    office_id       = db.Column(db.Integer, db.ForeignKey('offices.id'), nullable=True)
+    checkin_lat     = db.Column(db.Float)
+    checkin_lng     = db.Column(db.Float)
+    checkout_lat    = db.Column(db.Float)
+    checkout_lng    = db.Column(db.Float)
+
+    user = db.relationship('User', back_populates='attendance_records')
+    office          = db.relationship('Office', backref='attendance_records')
+
+    def __repr__(self):
+        return f"<Attendance User {self.user_id} on {self.date}>"
+
+class OTPLog(db.Model):
+    __tablename__ = 'otp_logs'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    otp_code = db.Column(db.String(10))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    is_used = db.Column(db.Boolean, default=False)
+
+    def __repr__(self):
+        return f"<OTPLog User {self.user_id} | Used: {self.is_used}>"
+
+
+class Office(db.Model):
+    __tablename__ = 'offices'
+
+    id           = db.Column(db.Integer, primary_key=True)
+    name         = db.Column(db.String(100), nullable=False)
+    admin_id     = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    latitude     = db.Column(db.Float, nullable=False)
+    longitude    = db.Column(db.Float, nullable=False)
+    radius_meters= db.Column(db.Float, default=100.0)  # geofence radius
+    created_at   = db.Column(db.DateTime, default=datetime.utcnow)
+
+    admin        = db.relationship('User', backref='offices')
+
+
+class Timesheet(db.Model):
+    __tablename__ = 'timesheets'
+
+    id            = db.Column(db.Integer, primary_key=True)
+    user_id       = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    period_start  = db.Column(db.Date, nullable=False)
+    period_end    = db.Column(db.Date, nullable=False)
+    total_hours   = db.Column(db.Float, nullable=False)
+    status        = db.Column(db.String(20), default='pending')  # e.g. pending/approved
+    generated_at  = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user          = db.relationship('User', backref='timesheets')
+
+class Ticket(db.Model):
+    __tablename__ = 'tickets'
+
+    id            = db.Column(db.Integer, primary_key=True)
+    user_id       = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    title         = db.Column(db.String(200), nullable=False)
+    description   = db.Column(db.Text, nullable=False)
+    status        = db.Column(db.String(20), default='open')  # open/in_progress/closed
+    created_at    = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at    = db.Column(db.DateTime, onupdate=datetime.utcnow)
+    assigned_to   = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+
+    user          = db.relationship('User', foreign_keys=[user_id], backref='tickets')
+    assignee      = db.relationship('User', foreign_keys=[assigned_to])
