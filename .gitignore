@@ -1,5 +1,8 @@
 # Ignore __pycache__ inside app folder specifically
 app/__pycache__/
+app/schema.er
+app/database.db
+app/schema.pdf
 
 # Environment files
 .env
