@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morabu Dashboard</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+    <link rel="stylesheet" href="static/dash_styles.css">
+</head>
+<body>
+
+<div class="container">
+    <!-- Sidebar Section -->
+    <aside>
+        <div class="toggle">
+            <div class="logo">
+                <img src="static/building.png">
+                <h2><span class="danger">Morabu</span></h2>
+            </div>
+            <div class="close" id="close-btn">
+                <span class="material-icons-sharp">close</span>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <a href="{{ url_for('home') }}" id="home-link">
+                <span class="material-icons-sharp">dashboard</span>
+                <h3>Home</h3>
+            </a>
+            <a href="{{ url_for('user') }}">
+                <span class="material-icons-sharp">person_outline</span>
+                <h3>User</h3>
+            </a>
+            <a href="{{ url_for('timelogs') }}">
+                <span class="material-icons-sharp">insights</span>
+                <h3>Timelogs</h3>
+            </a>
+            <a href="{{ url_for('tickets') }}" id="ticket-link">
+                <span class="material-icons-sharp">mail_outline</span>
+                <h3>Tickets</h3>
+                <span class="message-count">9</span>
+            </a>
+            <a href="{{ url_for('list_items') }}">
+                <span class="material-icons-sharp">inventory</span>
+                <h3>List</h3>
+            </a>
+            <a href="{{ url_for('logout') }}">
+                <span class="material-icons-sharp">logout</span>
+                <h3>Logout</h3>
+            </a>
+        </div>
+        
+    </aside>
+    <!-- End of Sidebar Section -->
+
+    <!-- Main Content Area -->
+    <main>
+        <!-- This area will change depending on which page -->
+        <!-- Example: Home, Timelogs, Tickets, etc. -->
+        
+    </main>
+    <!-- End of Main -->
+
+    <!-- Right Section -->
+    <div class="right-section">
+        <div class="nav">
+            <button id="menu-btn">
+                <span class="material-icons-sharp">menu</span>
+            </button>
+            <div class="dark-mode">
+                <span class="material-icons-sharp active">light_mode</span>
+                <span class="material-icons-sharp">dark_mode</span>
+            </div>
+
+            <div class="profile">
+                <div class="info">
+                    <p>Hey, <b>Vikas San</b></p>
+                    <small class="text-muted">2407026</small>
+                </div>
+                <div class="profile-photo">
+                    <img src="static/profile-1.jpg">
+                </div>
+            </div>
+        </div>
+
+        <div class="user-profile">
+            <div class="logo">
+                <img src="static/building.png">
+                <h2>Vikas</h2>
+                <p>設計開発部</p>
+            </div>
+        </div>
+
+        <div class="reminders">
+            <div class="header">
+                <h2>Notifications</h2>
+                <span class="material-icons-sharp">notifications_none</span>
+            </div>
+
+            <div class="notification">
+                <div class="icon">
+                    <span class="material-icons-sharp">volume_up</span>
+                </div>
+                <div class="content">
+                    <div class="info">
+                        <h3>Meetings</h3>
+                        <small class="text_muted">08:00 AM - 12:00 PM</small>
+                    </div>
+                    <span class="material-icons-sharp">more_vert</span>
+                </div>
+            </div>
+
+            <div class="notification deactive">
+                <div class="icon">
+                    <span class="material-icons-sharp">edit</span>
+                </div>
+                <div class="content">
+                    <div class="info">
+                        <h3>To-Do</h3>
+                        <small class="text_muted">08:00 AM - 12:00 PM</small>
+                    </div>
+                    <span class="material-icons-sharp">more_vert</span>
+                </div>
+            </div>
+
+            <div class="notification add-reminder">
+                <div>
+                    <span class="material-icons-sharp">add</span>
+                    <h3>Add Reminder</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End of Right Section -->
+
+</div>
+
+<!-- JS files -->
+<script src="static/dashboard.js"></script>
+<script src="static/logs.js"></script>
+<script src="static/tickets.js"></script>
+<script src="active_page.js"></script>
+<script src="index.js"></script>
+
+</body>
+</html>

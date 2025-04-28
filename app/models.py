@@ -3,6 +3,8 @@ from datetime import datetime, date
 
 db = SQLAlchemy()
 
+
+
 class User(db.Model):
     __tablename__ = 'users'
 
@@ -43,6 +45,12 @@ class Attendance(db.Model):
 
     user = db.relationship('User', back_populates='attendance_records')
     office          = db.relationship('Office', backref='attendance_records')
+    @property
+    def total_hours(self):
+        if self.checkin_time and self.checkout_time:
+            duration = self.checkout_time - self.checkin_time
+            return round(duration.total_seconds() / 3600, 2)
+        return 0.0
 
     def __repr__(self):
         return f"<Attendance User {self.user_id} on {self.date}>"

@@ -3,6 +3,11 @@ Morabu Hackathon April 2025
 - flask-cors
 - flash_sqlalchemy
 - flask-sqlalchemy-erd
+- openpyxl
+- reportlab
+- weasyprint
+
+
 
 
 generating an ER diag : 

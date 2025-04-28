@@ -286,6 +286,61 @@ main .analyse svg circle{
     transform: translate(5px, 5px);
 }
 
+.timelog-table {
+    background-color: var(--color-white);
+    border-radius: 1rem;
+    padding: 2rem;
+    margin-top: 2rem;
+    box-shadow: var(--box-shadow);
+    overflow-x: auto;
+}
+
+.timelog-table table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.timelog-table th, .timelog-table td {
+    text-align: left;
+    padding: 1rem;
+    font-size: 0.95rem;
+    color: var(--color-dark);
+    border-bottom: 1px solid var(--color-light);
+}
+
+.timelog-table th {
+    background-color: var(--color-light);
+    font-weight: 600;
+    color: var(--color-dark-variant);
+}
+
+.download-options {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.download-options button {
+    background-color: var(--color-primary); /* Base button background */
+    color: white; /* Text color */
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--border-radius-1);
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: var(--box-shadow);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.download-options button:hover {
+    background-color: var(--color-primary-variant); /* Darker background on hover */
+    color: rgb(70, 167, 247); /* Text stays white for contrast */
+}
+
+
+
 /*Clock-In feature*/
 
 main .analyse .sales svg circle{

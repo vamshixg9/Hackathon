@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Timesheet</title>
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            padding: 30px;
+        }
+        h1 {
+            font-size: 20px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #444;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #eaeaea;
+        }
+    </style>
+</head>
+<body>
+    <h1>モラブ阪神工業株式会社；タイムシート</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Clock In</th>
+                <th>Clock Out</th>
+                <th>Location</th>
+                <th>Total Hours</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for record in records %}
+            <tr>
+                <td>{{ record.date }}</td>
+                <td>{{ record.clock_in }}</td>
+                <td>{{ record.clock_out }}</td>
+                <td>{{ record.location }}</td>
+                <td>{{ record.total_hours }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

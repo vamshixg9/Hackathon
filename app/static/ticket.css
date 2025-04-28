@@ -1,0 +1,116 @@
+/* Styling for the tickets section */
+.tickets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.ticket-card {
+    border: 1px solid #ddd;
+    padding: 15px;
+    width: 220px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+.ticket-card h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.ticket-card .status {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.ticket-card .status.pending {
+    color: orange;
+}
+
+.ticket-card .status.approved {
+    color: green;
+}
+
+.ticket-card .status.rejected {
+    color: red;
+}
+
+.ticket-card .description {
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.ticket-card .actions {
+    display: flex;
+    gap: 10px;
+}
+
+.filter-btn {
+    margin: 5px;
+    padding: 8px 12px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.filter-btn:hover {
+    background-color: #0056b3;
+}
+
+.new-ticket-btn {
+    margin-top: 20px;
+    padding: 10px 15px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.new-ticket-btn:hover {
+    background-color: #218838;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+    text-align: center;
+}
+
+.modal-content textarea,
+.modal-content select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.modal-content button {
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.modal-content button:hover {
+    background-color: #0056b3;
+}
