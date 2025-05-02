@@ -5,7 +5,7 @@ from validate import validate_otp  # You'll write this soon
 from flask_cors import CORS
 import os
 from flask_sqlalchemy import SQLAlchemy
-from models import db, User, Attendance, OTPLog
+from models import db, User, Attendance, OTPLog, Ticket
 import openpyxl
 from openpyxl.styles import Font
 from flask import send_file
@@ -17,9 +17,26 @@ from reportlab.lib.pagesizes import letter
 app = Flask(__name__)
 CORS(app)
 app.secret_key = os.urandom(24)
+from sqlalchemy import create_engine
+# from sqlalchemy.pool import NullPool
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from .env
+load_dotenv()
+
+# Fetch variables
+USER = os.getenv("user")
+PASSWORD = os.getenv("password")
+HOST = os.getenv("host")
+PORT = os.getenv("port")
+DBNAME = os.getenv("dbname")
+
+
+
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(basedir, 'database.db')}"
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db.init_app(app)
@@ -93,6 +110,7 @@ def list_items():
 def home():  # ← WRONG function name or return
     user_email = session.get('email')  # Example of retrieving the logged-in user's email
     user = User.query.filter_by(email=user_email).first()
+    print(user)
     if user:
         # Get the attendance records of the user, maybe limit it to a certain date range or show all
         logs = Attendance.query.filter_by(user_id=user.id).all()
@@ -265,6 +283,213 @@ def download_pdf():
 
     pdf_file.seek(0)
     return send_file(pdf_file, as_attachment=True, download_name=filename, mimetype='application/pdf')
+
+@app.route('/api/tickets', methods=['GET', 'POST'])
+def handle_tickets():
+    user_email = session.get('email')
+    user = User.query.filter_by(email=user_email).first()
+
+    if not user:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    if request.method == 'POST':
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Missing JSON data'}), 400
+
+        title = data.get('title')
+        description = data.get('description')
+
+        if not title or not description:
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        new_ticket = Ticket(title=title, description=description, user_id=user.id)
+        db.session.add(new_ticket)
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'ticket': {
+                'id': new_ticket.id,
+                'user_id': new_ticket.user_id,
+                'title': new_ticket.title,
+                'description': new_ticket.description,
+                'status': new_ticket.status,
+                'created_at': new_ticket.created_at.strftime("%Y-%m-%d %H:%M:%S")
+            }
+        }), 201
+
+    else:  # GET request
+        tickets = Ticket.query.filter_by(user_id=user.id).all()
+        return jsonify([{
+            'id': t.id,
+            'title': t.title,
+            'description': t.description,
+            'status': t.status,
+            'created_at': t.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        } for t in tickets])
+
+
+@app.route('/api/tickets/<int:ticket_id>', methods=['DELETE'])
+def delete_ticket(ticket_id):
+    user_email = session.get('email')
+    user = User.query.filter_by(email=user_email).first()
+
+    if not user:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    ticket = Ticket.query.get(ticket_id)
+
+    if not ticket or ticket.user_id != user.id:
+        return jsonify({'error': 'Ticket not found or unauthorized'}), 404
+
+    db.session.delete(ticket)
+    db.session.commit()
+
+    return jsonify({'success': True}), 200
+
+
+from flask import Blueprint, request, jsonify, session
+from models import db, ToDo, User
+
+todo_bp = Blueprint('todos', __name__)
+
+@todo_bp.route('/api/todos', methods=['GET'])
+def get_todos():
+    user_email = session.get('email')
+    user = User.query.filter_by(email=user_email).first()
+
+    if not user:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    todos = ToDo.query.filter_by(user_id=user.id).order_by(ToDo.created_at.desc()).all()
+    return jsonify({'todos': [t.to_dict() for t in todos]})
+
+@todo_bp.route('/api/todos', methods=['POST'])
+def add_todo():
+    user_email = session.get('email')
+    print(f"User email from session: {user_email}")
+    user = User.query.filter_by(email=user_email).first()
+
+    if not user:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    content = request.get_json().get('content', '').strip()
+    if not content:
+        return jsonify({'error': 'Content required'}), 400
+
+    todo = ToDo(user_id=user.id, content=content)
+    db.session.add(todo)
+    db.session.commit()
+    return jsonify({'todo': todo.to_dict()})
+
+@todo_bp.route('/api/todos/<int:todo_id>/toggle', methods=['POST'])
+def toggle_todo(todo_id):
+    user_email = session.get('email')
+    user = User.query.filter_by(email=user_email).first()
+
+    if not user:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    todo = ToDo.query.filter_by(id=todo_id, user_id=user.id).first_or_404()
+    todo.is_done = not todo.is_done
+    db.session.commit()
+    return jsonify({'todo': todo.to_dict()})
+
+app.register_blueprint(todo_bp)
+
+# @app.route('/api/tickets', methods=['POST'])
+# def create_ticket():
+#     data = request.get_json()
+
+#     user_id = data.get('user_id')  # this must be provided by frontend
+#     title = data.get('title')
+#     description = data.get('description')
+
+#     if not user_id or not title or not description:
+#         return jsonify({'error': 'Missing required fields'}), 400
+
+#     new_ticket = Ticket(
+#         user_id=user_id,
+#         title=title,
+#         description=description,
+#         status='open',
+#         created_at=datetime.utcnow()
+#     )
+
+#     db.session.add(new_ticket)
+#     db.session.commit()
+
+#     return jsonify({'message': 'Ticket created successfully', 'ticket_id': new_ticket.id}), 201
+
+# @app.route('/api/tickets', methods=['GET'])
+# def get_tickets():
+#     tickets = Ticket.query.order_by(Ticket.created_at.desc()).all()
+
+#     result = []
+#     for ticket in tickets:
+#         result.append({
+#             'id': ticket.id,
+#             'user_id': ticket.user_id,
+#             'title': ticket.title,
+#             'description': ticket.description,
+#             'status': ticket.status,
+#             'created_at': ticket.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+#             'updated_at': ticket.updated_at.strftime('%Y-%m-%d %H:%M:%S') if ticket.updated_at else None,
+#             'assigned_to': ticket.assigned_to
+#         })
+
+#     return jsonify(result), 200
+
+
+
+
+import uuid
+from datetime import date
+from flask import session, jsonify
+@app.route('/api/generate_qr', methods=['POST'])
+def generate_qr():
+    user_email = session.get('email')
+    if not user_email:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+
+    user = User.query.filter_by(email=user_email).first()
+    if not user:
+        return jsonify({'success': False, 'message': 'User not found'}), 404
+
+    # Generate a unique QR token
+    token = str(uuid.uuid4())
+
+    # Get today's attendance or create a new one
+    today = date.today()
+    attendance = Attendance.query.filter_by(user_id=user.id, date=today).first()
+    if not attendance:
+        attendance = Attendance(user_id=user.id, date=today)
+
+    attendance.qr_token = token
+    db.session.add(attendance)
+    db.session.commit()
+
+    return jsonify({'success': True, 'token': token})
+
+@app.route('/api/expire_qr', methods=['POST'])
+def expire_qr():
+    user_email = session.get('email')
+    if not user_email:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+
+    user = User.query.filter_by(email=user_email).first()
+    if not user:
+        return jsonify({'success': False, 'message': 'User not found'}), 404
+
+    today = date.today()
+    attendance = Attendance.query.filter_by(user_id=user.id, date=today).first()
+    if attendance:
+        attendance.qr_token = None
+        db.session.commit()
+
+    return jsonify({'success': True})
+
 
 @app.route('/logout')
 def logout():

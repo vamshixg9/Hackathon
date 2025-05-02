@@ -6,7 +6,7 @@ Morabu Hackathon April 2025
 - openpyxl
 - reportlab
 - weasyprint
-
+- python-dotenv sqlalchemy psycopg2
 
 
 

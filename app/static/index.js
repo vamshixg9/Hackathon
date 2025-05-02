@@ -3,7 +3,7 @@ async function sendOTP() {
   const resultEl = document.getElementById("result");
 
   try {
-    const res = await fetch("/send-otp", {
+    const res = await fetch("/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

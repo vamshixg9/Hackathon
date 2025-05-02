@@ -14,7 +14,7 @@ class User(db.Model):
     name = db.Column(db.String(100))
     department = db.Column(db.String(100))
     role = db.Column(db.String(20), default='employee')  # 'admin' or 'employee'
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
     manager_id    = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     # relationship to let an admin see their managers/employees:
     team_members  = db.relationship('User', backref=db.backref('manager', remote_side=[id]))
@@ -109,3 +109,23 @@ class Ticket(db.Model):
 
     user          = db.relationship('User', foreign_keys=[user_id], backref='tickets')
     assignee      = db.relationship('User', foreign_keys=[assigned_to])
+
+
+class ToDo(db.Model):
+    __tablename__ = 'todos'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    content = db.Column(db.String(255), nullable=False)
+    is_done = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref='todos')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'content': self.content,
+            'is_done': self.is_done,
+            'created_at': self.created_at.isoformat()
+        }

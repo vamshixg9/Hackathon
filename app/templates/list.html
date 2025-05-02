@@ -55,8 +55,15 @@
 
     <!-- Main Content Area -->
     <main>
-        <!-- This area will change depending on which page -->
-        <!-- Example: Home, Timelogs, Tickets, etc. -->
+        <div class="todo-container">
+            <h2 class="todo-header">My Tasks</h2>
+            <form id="todo-form" class="todo-form">
+                <input type="text" id="todo-input" placeholder="What needs to be done?" required />
+            </form>
+            <ul id="todo-list" class="todo-list">
+                <!-- Tasks will be injected here -->
+            </ul>
+        </div>
         
     </main>
     <!-- End of Main -->
@@ -139,6 +146,7 @@
 <script src="static/dashboard.js"></script>
 <script src="static/logs.js"></script>
 <script src="static/tickets.js"></script>
+<script src="static/list.js"></script>
 <script src="active_page.js"></script>
 <script src="index.js"></script>
 

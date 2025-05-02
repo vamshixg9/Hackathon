@@ -6,7 +6,6 @@
     <title>Morabu Dashboard</title>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
     <link rel="stylesheet" href="static/dash_styles.css">
-    <link rel="stylesheet" href="static/tickets.css">
 </head>
 <body>
 
@@ -55,40 +54,33 @@
     <!-- End of Sidebar Section -->
 
     <!-- Main Content Area -->
-    <main>
-        <!-- This area will change depending on which page -->
-        <!-- Example: Home, Timelogs, Tickets, etc. -->
-
-        <h2>Tickets</h2>
-
-    <!-- Filters Section -->
-    <div class="filters">
-        <button class="filter-btn" data-filter="overtime">Overtime</button>
-        <button class="filter-btn" data-filter="leave">Leave</button>
-        <button class="filter-btn" data-filter="out_of_office">Out of Office</button>
-        <button class="filter-btn" data-filter="app_issue">App Issue</button>
-        <button class="filter-btn" data-filter="all">All</button>
-    </div>
-
-    <!-- Tickets Table/List -->
-    <div class="tickets">
-        <!-- Example Ticket -->
-        <div class="ticket-card">
-            <h3>Overtime Request</h3>
-            <p class="status pending">Pending</p>
-            <p class="description">Request to work overtime on 30th April</p>
-            <div class="actions">
-                <button class="approve-btn">Approve</button>
-                <button class="reject-btn">Reject</button>
-            </div>
-        </div>
-        <!-- Add more ticket cards here -->
-    </div>
-
-    <!-- New Ticket Button -->
-    <button class="new-ticket-btn" onclick="openNewTicketModal()">New Ticket</button>
+        <main>
+            <form id="ticketForm" class="ticket-form">
+            <label class="block">
+                <span class="text-gray-700">Type</span>
+                <select name="type" required class="mt-1 block w-full border rounded p-2">
+                <option value="">Select a type</option>
+                <option value="Overtime">Overtime</option>
+                <option value="Leave">Leave</option>
+                <option value="Out of Office">Out of Office</option>
+                <option value="App Issue">App Issue</option>
+                </select>
+            </label>
         
-    </main>
+            <label class="block">
+                <span class="text-gray-700">Description</span>
+                <textarea name="description" required class="mt-1 block w-full border rounded p-2" rows="4"></textarea>
+            </label>
+        
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                Submit
+            </button>
+            </form>
+        
+            <div id="ticketList" class="mt-8 space-y-4"></div>
+        </main>
+        
+    
     <!-- End of Main -->
 
     <!-- Right Section -->

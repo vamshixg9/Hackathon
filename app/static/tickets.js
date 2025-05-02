@@ -1,65 +1,97 @@
-const tickets = []; // Store ticket data
-
-// Handle form submission
-document.getElementById('ticket-form').addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevent page reload
-
-    const type = document.getElementById('request-type').value;
-    const date = document.getElementById('request-date').value;
-    const reason = document.getElementById('request-reason').value;
-
-    if (!type || !date || !reason) {
-        alert('Please fill all fields!');
-        return;
-    }
-
-    const newTicket = {
-        Type: type,
-        Date: date,
-        Reason: reason,
-        Status: 'Pending'
-    };
-
-    tickets.push(newTicket);
-    renderTickets(); // Refresh the table
-    this.reset(); // Clear the form
-});
-
-// Render tickets into the table
-function renderTickets() {
-    const tbody = document.getElementById('tickets-table').querySelector('tbody');
-    tbody.innerHTML = '';
-
-    tickets.forEach(ticket => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${ticket.Type}</td>
-            <td>${ticket.Date}</td>
-            <td>${ticket.Reason}</td>
-            <td class="${getStatusClass(ticket.Status)}">${ticket.Status}</td>
-        `;
-        tbody.appendChild(tr);
+document.addEventListener("DOMContentLoaded", () => {
+    const ticketForm = document.getElementById("ticketForm");
+    const ticketList = document.getElementById("ticketList");
+  
+    if (window.ticketFormHandlerAttached) return;
+    window.ticketFormHandlerAttached = true;
+    // Fetch and display existing tickets on page load
+    fetch("/api/tickets", {
+      credentials: "include"
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        displayTickets(data);
+      })
+      .catch((err) => {
+        console.error("Error fetching tickets:", err);
+      });
+  
+    // Handle form submission
+    ticketForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      console.log("Form submitted");  // Debug: Check for double event
+  
+      const formData = new FormData(ticketForm);
+      const ticketData = {
+        title: formData.get("type"),  // 'type' used as title
+        description: formData.get("description"),
+      };
+  
+      fetch("/api/tickets", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(ticketData),
+        credentials: "include"
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success) {
+            addTicketToList(data.ticket);
+            ticketForm.reset();
+          } else {
+            alert("Error submitting ticket.");
+          }
+        })
+        .catch((err) => {
+          console.error("Error submitting ticket:", err);
+        });
     });
-}
-
-// Helper: Return class based on status
-function getStatusClass(status) {
-    switch (status) {
-        case 'Pending': return 'warning';
-        case 'Approved': return 'success';
-        case 'Rejected': return 'danger';
-        default: return '';
+  
+    function displayTickets(tickets) {
+      ticketList.innerHTML = "";
+      tickets.forEach(addTicketToList);
     }
-}
-
-// (Optional) Load existing tickets from localStorage on page load
-document.addEventListener('DOMContentLoaded', () => {
-    const savedTickets = JSON.parse(localStorage.getItem('tickets')) || [];
-    tickets.push(...savedTickets);
-    renderTickets();
-});
-
-// (Optional) Save tickets to localStorage whenever you add a ticket
-function saveTickets() {
-    localStorage.setItem('tickets', JSON.stringify(tickets));
-}
+  
+    function addTicketToList(ticket) {
+        const div = document.createElement("div");
+        div.className = "ticket-entry p-4 border rounded bg-gray-50 shadow-sm flex justify-between items-start gap-4";
+      
+        const content = document.createElement("div");
+        content.innerHTML = `
+          <p><strong>Type:</strong> ${ticket.title}</p>
+          <p><strong>Description:</strong> ${ticket.description}</p>
+          <p><strong>Status:</strong> <span class="ticket-status ${ticket.status?.toLowerCase() || 'pending'}">${ticket.status || 'Pending'}</span></p>
+          <p class="text-sm text-gray-500">Submitted at: ${new Date(ticket.created_at).toLocaleString()}</p>
+        `;
+      
+        const deleteBtn = document.createElement("button");
+        deleteBtn.innerHTML = "❌";
+        deleteBtn.className = "text-red-500 hover:text-red-700 text-xl font-bold";
+        deleteBtn.title = "Delete ticket";
+      
+        deleteBtn.addEventListener("click", () => {
+          fetch(`/api/tickets/${ticket.id}`, {
+            method: "DELETE",
+            credentials: "include"
+          })
+          .then(res => {
+            if (res.ok) {
+              div.remove();
+            } else {
+              alert("Failed to delete ticket.");
+            }
+          })
+          .catch(err => {
+            console.error("Error deleting ticket:", err);
+          });
+        });
+      
+        div.appendChild(content);
+        div.appendChild(deleteBtn);
+        ticketList.prepend(div);
+      }
+      
+  });
+  
