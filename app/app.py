@@ -86,12 +86,34 @@ def verify_otp():
     data = request.json
     entered_otp = data["otp"]
     saved_otp = session.get("otp")
-    if entered_otp == saved_otp:
-        return jsonify(success=True, message="OTP verified. Redirecting...")
-    else:
-        return jsonify(success=False, message="Incorrect OTP.")
-    
+    user_email = session.get("email")
 
+    if entered_otp != saved_otp:
+        return jsonify(success=False, message="Incorrect OTP.")
+
+    user = User.query.filter_by(email=user_email).first()
+    if not user:
+        return jsonify(success=False, message="User not found.")
+
+    session['role'] = user.role  # Store user role for session use
+
+    # Decide redirect based on role
+    if user.role == "admin":
+        redirect_url = url_for("admin_home")
+    else:
+        redirect_url = url_for("home")
+
+    return jsonify(success=True, redirect_url=redirect_url)
+
+@app.route("/admin_home")
+def admin_home():
+    user_email = session.get('email')
+    user = User.query.filter_by(email=user_email).first()
+
+    if not user or user.role != "admin":
+        return redirect(url_for('index'))
+
+    return render_template("admin_home.html")
 
 @app.route("/user")
 def user():
@@ -104,6 +126,27 @@ def tickets():
 @app.route("/list")
 def list_items():
     return render_template("list.html")
+
+@app.route("/admin_user")
+def admin_user():
+    return render_template("admin_user.html")
+
+@app.route("/admin_tickets")
+def admin_tickets():
+    return render_template("admin_tickets.html")
+
+@app.route("/admin_offices")
+def admin_offices():
+    return render_template("admin_offices.html")
+
+@app.route("/admin_employees")
+def admin_employees():
+    return render_template("admin_employees.html")
+
+@app.route("/admin_admin")
+def admin_admin():
+    return render_template("admin_admin.html")
+
 
 
 @app.route("/home")
@@ -447,6 +490,34 @@ app.register_blueprint(todo_bp)
 import uuid
 from datetime import date
 from flask import session, jsonify
+from datetime import datetime
+from models import db, Attendance, User
+@app.route('/api/admin/checkin', methods=['POST'])
+def admin_checkin():
+    data = request.get_json()
+    token = data.get('token')
+    print(token)
+
+    if not token:
+        return jsonify({'success': False, 'message': 'Missing token'}), 400
+
+    # Find attendance record with the given token that hasn't been checked in yet
+    attendance = Attendance.query.filter_by(qr_token=token, checkin_time=None).first()
+
+    if not attendance:
+        return jsonify({'success': False, 'message': 'Invalid or expired token'}), 404
+
+    try:
+        attendance.checkin_time = datetime.utcnow()
+        attendance.qr_token = None
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': f'Server error: {str(e)}'}), 500
+
+    return jsonify({'success': True, 'message': 'Check-in successful'})
+
+
 @app.route('/api/generate_qr', methods=['POST'])
 def generate_qr():
     user_email = session.get('email')
@@ -489,6 +560,9 @@ def expire_qr():
         db.session.commit()
 
     return jsonify({'success': True})
+
+
+
 
 
 @app.route('/logout')
