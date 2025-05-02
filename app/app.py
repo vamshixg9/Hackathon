@@ -562,6 +562,39 @@ def expire_qr():
     return jsonify({'success': True})
 
 
+from flask import jsonify, session
+from datetime import date
+from models import Attendance, User
+
+@app.route('/api/user/attendance-status')
+def attendance_status():
+    user_email = session.get('email')
+    if not user_email:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+
+    user = User.query.filter_by(email=user_email).first()
+    if not user:
+        return jsonify({'success': False, 'message': 'User not found'}), 404
+
+    today = date.today()
+    record = Attendance.query.filter_by(user_id=user.id, date=today).first()
+
+    if record:
+        return jsonify({
+            'success': True,
+            'checked_in': record.checkin_time is not None,
+            'checkin_time': record.checkin_time.isoformat() if record.checkin_time else None,
+            'checkout_time': record.checkout_time.isoformat() if record.checkout_time else None,
+            'total_hours': record.total_hours
+        })
+
+    return jsonify({
+        'success': True,
+        'checked_in': False,
+        'checkin_time': None,
+        'checkout_time': None,
+        'total_hours': 0.0
+    })
 
 
 
