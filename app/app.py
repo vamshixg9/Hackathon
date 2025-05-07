@@ -585,6 +585,20 @@ def admin_scan():
         return jsonify({'success': False, 'message': f'Server error: {str(e)}'}), 500
     
 
+@app.route('/api/qr_status/<token>')
+def qr_status(token):
+    record = Attendance.query.filter_by(qr_token=token).first()
+
+    if not record:
+        # Token is no longer in DB: likely used and cleared
+        return jsonify({'used': True})
+
+    # If either time is populated, token was acted on
+    if record.checkin_time or record.checkout_time:
+        return jsonify({'used': True})
+
+    return jsonify({'used': False})
+
 
 @app.route('/api/generate_qr', methods=['POST'])
 def generate_qr():

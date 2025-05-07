@@ -5,8 +5,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const checkinButton = document.getElementById("checkin-card");
   const checkoutButton = document.getElementById("checkout-card");
 
-
   let qrInstance = null;
+  let pollInterval = null;
 
   // Function to open QR modal and generate QR code
   async function generateAndShowQR() {
@@ -27,6 +27,21 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         qrModal.style.display = "flex";
+
+        // Start polling to detect if check-in or check-out happened
+        pollInterval = setInterval(async () => {
+          const response = await fetch('/api/check_qr_status');
+          const data = await response.json();
+        
+          if (data.used) {
+            clearInterval(pollInterval);
+            qrModal.style.display = "none";
+        
+            // ⬇⬇⬇ This is the missing piece:
+            fetchAttendanceStatus();  // <== REFRESH UI IMMEDIATELY after success
+          }
+        }, 2000);
+        
       } else {
         alert("Failed to generate QR.");
       }
@@ -36,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Handle check-in button click
+  // Handle check-in/checkout button clicks
   if (checkinButton) {
     checkinButton.addEventListener("click", generateAndShowQR);
   }
@@ -48,10 +63,17 @@ document.addEventListener("DOMContentLoaded", function () {
   qrClose.addEventListener("click", () => {
     qrModal.style.display = "none";
 
-    // Optional: Tell server to expire the token if modal is closed
+    // Tell server to expire the token if modal is closed
     fetch('/api/expire_qr', { method: 'POST' });
+
+    // Stop polling if user closes modal manually
+    if (pollInterval) clearInterval(pollInterval);
+
+    // Refresh UI
+    fetchAttendanceStatus();
   });
 });
+
 
 let timerInterval = null;
 
@@ -63,37 +85,39 @@ function fetchAttendanceStatus() {
       const checkoutCard = document.getElementById('checkout-card');
       const checkinStatus = document.getElementById('clockin-status');
       const checkoutStatus = document.getElementById('clockout-status');
-
-      if (data.checked_in && !data.checkout_time) {
-        // ✅ Checked in but not yet out
+    
+      if (!data.checkin_time && !data.checkout_time) {
+        // No attendance record or both cleared — enable check-in
+        checkinCard.classList.remove('disabled');
+        checkoutCard.classList.add('disabled');
+        checkinStatus.innerText = "Not checked in";
+        checkoutStatus.innerText = "Not checked out";
+        stopTimer();
+    
+      } else if (data.checkin_time && !data.checkout_time) {
+        // Only checked in — enable checkout
         checkinCard.classList.add('disabled');
         checkoutCard.classList.remove('disabled');
         checkinStatus.innerText = `Checked in at ${formatTime(data.checkin_time)}`;
         checkoutStatus.innerText = "Not checked out";
         startTimer(data.checkin_time);
-      } else if (data.checkout_time) {
-        // ✅ Fully completed session
+    
+      } else if (data.checkin_time && data.checkout_time) {
+        // Fully checked in and out — everything done
         checkinCard.classList.remove('disabled');
         checkoutCard.classList.add('disabled');
         checkinStatus.innerText = "Not checked in";
         checkoutStatus.innerText = `Checked out at ${formatTime(data.checkout_time)}`;
         stopTimer();
-      } else {
-        // ❌ No check-in yet today
-        checkinCard.classList.remove('disabled');
-        checkoutCard.classList.add('disabled');
-        checkinStatus.innerText = "Not checked in";
-        checkoutStatus.innerText = "Not checked out";
-        stopTimer();
       }
     });
+    
 }
 
 function formatTime(datetimeStr) {
   const d = new Date(datetimeStr);
   return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
-
 
 function startTimer(checkinTimeStr) {
   const checkinTime = new Date(checkinTimeStr);
@@ -118,8 +142,7 @@ function pad(num) {
   return num.toString().padStart(2, '0');
 }
 
-// Call on page load
+// Fetch status on load
 document.addEventListener('DOMContentLoaded', () => {
   fetchAttendanceStatus();
 });
-
