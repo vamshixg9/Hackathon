@@ -1317,4 +1317,121 @@ main .previous-logs a{
     border-radius: 6px;
     font-size: 0.9rem;
   }
+  .user-info {
+    max-width: 500px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    text-align: center;
+  }
   
+  .user-info img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 15px;
+  }
+  
+  .user-info .details {
+    text-align: left;
+    margin-top: 20px;
+  }
+  .profile-card {
+    background: #fff;
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: 2rem auto;
+    text-align: center;
+}
+
+.profile-photo img {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #1976d2;
+    margin-bottom: 1rem;
+    transition: 0.3s ease;
+}
+
+.profile-photo img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.3);
+}
+
+.upload-form {
+    margin: 1rem 0;
+}
+
+.custom-file-upload {
+    display: inline-block;
+    background-color: #1976d2;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-right: 10px;
+}
+
+.custom-file-upload:hover {
+    background-color: #1565c0;
+}
+
+.custom-file-upload input[type="file"] {
+    display: none;
+}
+
+.btn-upload {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-upload:hover {
+    background-color: #388e3c;
+}
+
+.profile-details {
+    text-align: left;
+    margin-top: 1.5rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+.user-info {
+    max-width: 500px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+  
+  .user-info img {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 15px;
+  }
+  
+  .user-info .details {
+    text-align: left;
+    margin-top: 20px;
+  }
+  .right-section .nav .profile .profile-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
