@@ -492,31 +492,45 @@ from datetime import date
 from flask import session, jsonify
 from datetime import datetime
 from models import db, Attendance, User
-@app.route('/api/admin/checkin', methods=['POST'])
-def admin_checkin():
+
+@app.route('/api/admin/scan', methods=['POST'])
+def admin_scan():
     data = request.get_json()
     token = data.get('token')
-    print(token)
+    print(f"Scanned token: {token}")
 
     if not token:
         return jsonify({'success': False, 'message': 'Missing token'}), 400
 
-    # Find attendance record with the given token that hasn't been checked in yet
-    attendance = Attendance.query.filter_by(qr_token=token, checkin_time=None).first()
+    # Find the matching attendance record
+    attendance = Attendance.query.filter_by(qr_token=token).first()
 
     if not attendance:
         return jsonify({'success': False, 'message': 'Invalid or expired token'}), 404
 
     try:
-        attendance.checkin_time = datetime.utcnow()
-        attendance.qr_token = None
+        if attendance.checkin_time is None:
+            # Check-in flow
+            attendance.checkin_time = datetime.utcnow()
+            attendance.qr_token = None
+            message = "Check-in successful"
+
+        elif attendance.checkout_time is None:
+            # Check-out flow
+            attendance.checkout_time = datetime.utcnow()
+            attendance.qr_token = None
+            message = "Check-out successful"
+
+        else:
+            # Already checked in and out
+            return jsonify({'success': False, 'message': 'Already checked out'}), 400
+
         db.session.commit()
+        return jsonify({'success': True, 'message': message})
+
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': f'Server error: {str(e)}'}), 500
-
-    return jsonify({'success': True, 'message': 'Check-in successful'})
-
 
 @app.route('/api/generate_qr', methods=['POST'])
 def generate_qr():
