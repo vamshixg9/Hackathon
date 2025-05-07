@@ -484,6 +484,55 @@ app.register_blueprint(todo_bp)
 
 #     return jsonify(result), 200
 
+@app.route('/api/right-panel')
+def get_right_panel():
+    user = User.query.filter_by(email=session.get("email")).first()
+    if not user:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    return jsonify({
+        "user": {
+            "name": user.name,
+            "department": user.department,
+            "employee_id": user.id,
+            "profile_pic": url_for('static', filename='profile-1.jpg')  # fallback image
+        }
+    })
+@app.route('/api/right-panel-todos')
+def right_panel_todos():
+    user_email = session.get('email')
+    if not user_email:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    user = User.query.filter_by(email=user_email).first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    # Fetch the 2 oldest uncompleted todos
+    todos = ToDo.query.filter_by(user_id=user.id, is_done=False).order_by(ToDo.created_at.asc()).limit(2).all()
+
+    return jsonify({
+        "todos": [{"id": t.id, "content": t.content} for t in todos]
+    })
+
+
+@app.route('/api/ticket-count')
+def ticket_count():
+    user_email = session.get('email')
+    print("[DEBUG] Session email:", user_email)
+
+    user = User.query.filter_by(email=user_email).first()
+    print("[DEBUG] User:", user)
+
+    if not user:
+        return jsonify({'count': 0})
+
+    count = Ticket.query.filter_by(user_id=user.id).count()
+    print("[DEBUG] Ticket count:", count)
+
+    return jsonify({'count': count})
+
+
 
 
 
@@ -493,11 +542,15 @@ from flask import session, jsonify
 from datetime import datetime
 from models import db, Attendance, User
 
+
 @app.route('/api/admin/scan', methods=['POST'])
 def admin_scan():
+    print("waiting for QR")
     data = request.get_json()
     token = data.get('token')
     print(f"Scanned token: {token}")
+
+
 
     if not token:
         return jsonify({'success': False, 'message': 'Missing token'}), 400
@@ -527,35 +580,47 @@ def admin_scan():
 
         db.session.commit()
         return jsonify({'success': True, 'message': message})
-
     except Exception as e:
         db.session.rollback()
         return jsonify({'success': False, 'message': f'Server error: {str(e)}'}), 500
+    
+
 
 @app.route('/api/generate_qr', methods=['POST'])
 def generate_qr():
     user_email = session.get('email')
-    if not user_email:
+    user = User.query.filter_by(email=user_email).first()
+    
+    if not user:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
 
-    user = User.query.filter_by(email=user_email).first()
-    if not user:
-        return jsonify({'success': False, 'message': 'User not found'}), 404
-
-    # Generate a unique QR token
-    token = str(uuid.uuid4())
-
-    # Get today's attendance or create a new one
     today = date.today()
-    attendance = Attendance.query.filter_by(user_id=user.id, date=today).first()
-    if not attendance:
-        attendance = Attendance(user_id=user.id, date=today)
 
-    attendance.qr_token = token
-    db.session.add(attendance)
-    db.session.commit()
+    # Find latest attendance entry
+    latest_attendance = (
+        Attendance.query.filter_by(user_id=user.id)
+        .order_by(Attendance.id.desc())
+        .first()
+    )
+
+    # ✅ Create new only if last one is missing or already checked out
+    if not latest_attendance or latest_attendance.checkout_time:
+        new_attendance = Attendance(
+            user_id=user.id,
+            date=today,
+            qr_token= str(uuid.uuid4())
+        )
+        db.session.add(new_attendance)
+        db.session.commit()
+        token = new_attendance.qr_token
+    else:
+        # ❌ Reuse existing (not yet checked out)
+        latest_attendance.qr_token = str(uuid.uuid4())
+        db.session.commit()
+        token = latest_attendance.qr_token
 
     return jsonify({'success': True, 'token': token})
+
 
 @app.route('/api/expire_qr', methods=['POST'])
 def expire_qr():

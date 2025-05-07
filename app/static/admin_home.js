@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 html5QrCode.stop().then(() => {
                     scannerStatus.textContent = 'Verifying...';
 
-                    fetch('/api/admin/checkin', {
+                    fetch('/api/admin/scan', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ token: decodedText })

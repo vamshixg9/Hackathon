@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         li.appendChild(circle);
         li.appendChild(span);
-        todoList.prepend(li);
+        todoList.appendChild(li);
     }
 
     // Toggle task status

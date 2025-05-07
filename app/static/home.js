@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const qrClose = document.getElementById("qr-close");
   const qrCodeContainer = document.getElementById("qr-code");
   const checkinButton = document.getElementById("checkin-card");
+  const checkoutButton = document.getElementById("checkout-card");
 
 
   let qrInstance = null;
@@ -39,6 +40,9 @@ document.addEventListener("DOMContentLoaded", function () {
   if (checkinButton) {
     checkinButton.addEventListener("click", generateAndShowQR);
   }
+  if (checkoutButton) {
+    checkoutButton.addEventListener("click", generateAndShowQR);
+  }
 
   // Close QR modal
   qrClose.addEventListener("click", () => {
@@ -55,25 +59,41 @@ function fetchAttendanceStatus() {
   fetch('/api/user/attendance-status')
     .then(res => res.json())
     .then(data => {
-      if (data.checked_in) {
-        document.getElementById('checkin-card').classList.add('disabled');
-        document.getElementById('checkout-card').classList.remove('disabled');
-        document.getElementById('clockin-status').innerText = "Checked in at " + data.checkin_time;
-        startTimer(data.checkin_time);
-      } else {
-        document.getElementById('checkin-card').classList.remove('disabled');
-        document.getElementById('checkout-card').classList.add('disabled');
-        document.getElementById('clockin-status').innerText = "Not checked in";
-        document.getElementById('clockout-status').innerText = "Not checked out";
-        stopTimer();
-      }
+      const checkinCard = document.getElementById('checkin-card');
+      const checkoutCard = document.getElementById('checkout-card');
+      const checkinStatus = document.getElementById('clockin-status');
+      const checkoutStatus = document.getElementById('clockout-status');
 
-      if (data.checkout_time) {
-        document.getElementById('clockout-status').innerText = "Checked out at " + data.checkout_time;
+      if (data.checked_in && !data.checkout_time) {
+        // ✅ Checked in but not yet out
+        checkinCard.classList.add('disabled');
+        checkoutCard.classList.remove('disabled');
+        checkinStatus.innerText = `Checked in at ${formatTime(data.checkin_time)}`;
+        checkoutStatus.innerText = "Not checked out";
+        startTimer(data.checkin_time);
+      } else if (data.checkout_time) {
+        // ✅ Fully completed session
+        checkinCard.classList.remove('disabled');
+        checkoutCard.classList.add('disabled');
+        checkinStatus.innerText = "Not checked in";
+        checkoutStatus.innerText = `Checked out at ${formatTime(data.checkout_time)}`;
+        stopTimer();
+      } else {
+        // ❌ No check-in yet today
+        checkinCard.classList.remove('disabled');
+        checkoutCard.classList.add('disabled');
+        checkinStatus.innerText = "Not checked in";
+        checkoutStatus.innerText = "Not checked out";
         stopTimer();
       }
     });
 }
+
+function formatTime(datetimeStr) {
+  const d = new Date(datetimeStr);
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
 
 function startTimer(checkinTimeStr) {
   const checkinTime = new Date(checkinTimeStr);
