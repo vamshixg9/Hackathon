@@ -12,20 +12,20 @@ class User(db.Model):
     password_hash = db.Column(db.String(128), nullable=False)
     name = db.Column(db.String(100))
     department = db.Column(db.String(100))
-    role = db.Column(db.String(20), default='employee')  # 'admin' or 'employee'
+    role = db.Column(db.String(20), default='employee')
     created_at = db.Column(db.DateTime, default=datetime.now)
 
-    manager_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # Only if role == employee
+    manager_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     office_id = db.Column(db.Integer, db.ForeignKey('offices.id'), nullable=True)
 
     # Relationships
     manager = db.relationship('User', remote_side=[id], backref='team_members')
-    office = db.relationship('Office', backref='employees')
+    office = db.relationship('Office', backref='employees', foreign_keys=[office_id])
+
     attendance_records = db.relationship('Attendance', back_populates='user')
 
     def __repr__(self):
         return f"<User {self.email} | {self.role}>"
-
 
 
 
@@ -75,15 +75,15 @@ class OTPLog(db.Model):
 class Office(db.Model):
     __tablename__ = 'offices'
 
-    id           = db.Column(db.Integer, primary_key=True)
-    name         = db.Column(db.String(100), nullable=False)
-    admin_id     = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    latitude     = db.Column(db.Float, nullable=False)
-    longitude    = db.Column(db.Float, nullable=False)
-    radius_meters= db.Column(db.Float, default=100.0)  # geofence radius
-    created_at   = db.Column(db.DateTime, default=datetime.utcnow)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    latitude = db.Column(db.Float, nullable=False)
+    longitude = db.Column(db.Float, nullable=False)
+    radius_meters = db.Column(db.Float, default=100.0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    admin        = db.relationship('User', backref='offices')
+    admin = db.relationship('User', backref='offices', foreign_keys=[admin_id])
 
 
 class Timesheet(db.Model):
