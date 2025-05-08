@@ -145,7 +145,7 @@ def upload_profile():
     if not user:
         return redirect(url_for('index'))
 
-    user.employee_id = request.form.get('name', user.employee_id)
+    user.employee_id = request.form.get('employee_id', user.employee_id)
     user.name = request.form.get('name', user.name)
     user.department = request.form.get('department', user.department)
     user.role = request.form.get('role', user.role)
@@ -169,7 +169,7 @@ def upload_Adminprofile():
 
     if not user:
         return redirect(url_for('index'))
-
+    admin.employee_id = request.form.get('employee_id', admin.employee_id)
     admin.name = request.form.get('name', admin.name)
     admin.department = request.form.get('department', admin.department)
     admin.role = request.form.get('role', admin.role)
@@ -590,7 +590,7 @@ def get_right_panel():
         "user": {
             "name": user.name,
             "department": user.department,
-            "employee_id": user.id,
+            "employee_id": user.employee_id,
             "profile_pic": url_for('static', filename='profile-1.jpg')  # fallback image
         }
     })
