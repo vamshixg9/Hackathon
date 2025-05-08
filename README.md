@@ -7,6 +7,7 @@ Morabu Hackathon April 2025
 - reportlab
 - weasyprint
 - python-dotenv sqlalchemy psycopg2
+- geopy
 
 
 
