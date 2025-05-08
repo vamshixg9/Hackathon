@@ -171,9 +171,6 @@ def tickets():
 def list_items():
     return render_template("list.html")
 
-@app.route("/admin_user")
-def admin_user():
-    return render_template("admin_user.html")
 
 @app.route("/admin_tickets")
 def admin_tickets():
@@ -187,10 +184,42 @@ def admin_offices():
 def admin_employees():
     return render_template("admin_employees.html")
 
-@app.route("/admin_admin")
-def admin_admin():
-    return render_template("admin_admin.html")
+@app.route("/admin_user")
+def admin_user():
+    user_email = session.get('email')
+    admin = User.query.filter_by(email=user_email, role="admin").first()
 
+    if not admin:
+        return redirect(url_for('index'))
+
+    return render_template("admin_user.html", admin=admin)
+
+
+@app.route("/admin_admin", methods=["GET", "POST"])
+def admin_admin():
+    user_email = session.get('email')
+    current_user = User.query.filter_by(email=user_email).first()
+
+    if not current_user or current_user.role != "admin":
+        return redirect(url_for("index"))
+
+    if request.method == "POST":
+        selected_id = request.form.get("employee_id")
+        action = request.form.get("action")
+
+        selected_user = User.query.get(selected_id)
+        if selected_user:
+            if action == "make":
+                selected_user.role = "admin"
+            elif action == "remove":
+                selected_user.role = "employee"
+            db.session.commit()
+            return redirect(url_for("admin_admin"))
+
+    # Show all users, even admins (so we can demote them)
+    employees = User.query.all()
+
+    return render_template("admin_admin.html", employees=employees)
 
 
 @app.route("/home")

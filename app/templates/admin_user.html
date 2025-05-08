@@ -9,49 +9,53 @@
 </head>
 <body>
 
-<div class="container">
-    <!-- Sidebar Section -->
-    <aside>
-        <div class="toggle">
-            <div class="logo">
-                <img src="static/building.png">
-                <h2><span class="danger">Morabu</span></h2>
+    <div class="container">
+        <!-- Sidebar Section -->
+        <aside>
+            <div class="toggle">
+                <div class="logo">
+                    <img src="static/building.png">
+                    <h2><span class="danger">Morabu</span></h2>
+                </div>
+                <div class="close" id="close-btn">
+                    <span class="material-icons-sharp">close</span>
+                </div>
             </div>
-            <div class="close" id="close-btn">
-                <span class="material-icons-sharp">close</span>
+    
+            <div class="sidebar">
+                <a href="{{ url_for('admin_home') }}" id="home-link">
+                    <span class="material-icons-sharp">dashboard</span>
+                    <h3>Home</h3>
+                </a>
+                <a href="{{ url_for('admin_user') }}">
+                    <span class="material-icons-sharp">person_outline</span>
+                    <h3>User</h3>
+                </a>
+                <a href="{{ url_for('admin_admin') }}">
+                    <span class="material-icons-sharp">person_outline</span>
+                    <h3>Admin</h3>
+                </a>
+                <a href="{{ url_for('admin_employees') }}">
+                    <span class="material-icons-sharp">insights</span>
+                    <h3>Employees</h3>
+                </a>
+                <a href="{{ url_for('admin_tickets') }}" id="ticket-link">
+                    <span class="material-icons-sharp">mail_outline</span>
+                    <h3>Tickets</h3>
+                    <span class="message-count">9</span>
+                </a>
+                <a href="{{ url_for('admin_offices') }}">
+                    <span class="material-icons-sharp">inventory</span>
+                    <h3>Offices</h3>
+                </a>
+                <a href="{{ url_for('logout') }}">
+                    <span class="material-icons-sharp">logout</span>
+                    <h3>Logout</h3>
+                </a>
             </div>
-        </div>
-
-        <div class="sidebar">
-            <a href="{{ url_for('home') }}" id="home-link">
-                <span class="material-icons-sharp">dashboard</span>
-                <h3>Home</h3>
-            </a>
-            <a href="{{ url_for('user') }}">
-                <span class="material-icons-sharp">person_outline</span>
-                <h3>User</h3>
-            </a>
-            <a href="{{ url_for('timelogs') }}">
-                <span class="material-icons-sharp">insights</span>
-                <h3>Timelogs</h3>
-            </a>
-            <a href="{{ url_for('tickets') }}" id="ticket-link">
-                <span class="material-icons-sharp">mail_outline</span>
-                <h3>Tickets</h3>
-                <span class="message-count" id="ticket-count">0</span> <!-- ID added here -->
-            </a>
-            </a>
-            <a href="{{ url_for('list_items') }}">
-                <span class="material-icons-sharp">inventory</span>
-                <h3>List</h3>
-            </a>
-            <a href="{{ url_for('index') }}">
-                <span class="material-icons-sharp">logout</span>
-                <h3>Logout</h3>
-            </a>
-        </div>
-        
-    </aside>
+            
+        </aside>
+        <!-- End of Sidebar Section -->
     <!-- End of Sidebar Section -->
 
     <!-- Main Content Area -->
@@ -60,7 +64,7 @@
         <main>
             <h1>User Profile</h1>
             <div class="user-info">
-                <img id="profile-preview" src="{{ user.profile_pic or url_for('static', filename='profile-1.jpg') }}" alt="Profile Photo" />
+                <img id="profile-preview" src="{{ admin.profile_pic or url_for('static', filename='profile-1.jpg') }}" alt="Profile Photo" />
 
                          
               <form action="{{ url_for('upload_profile') }}" method="POST" enctype="multipart/form-data">
@@ -70,9 +74,9 @@
               </form>
           
               <div class="details">
-                <p><strong>Name:</strong> {{ user.name }}</p>
-                <p><strong>Email:</strong> {{ user.email }}</p>
-                <p><strong>Department:</strong> {{ user.department or 'N/A' }}</p>
+                <p><strong>Name:</strong> {{ admin.name }}</p>
+                <p><strong>Email:</strong> {{ admin.email }}</p>
+                <p><strong>Department:</strong> {{ admin.department or 'N/A' }}</p>
               </div>
             </div>
           </main>
