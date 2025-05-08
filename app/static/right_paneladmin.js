@@ -35,34 +35,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
 
                 <div class="reminders">
-                    <div class="header">
-                        <h2>To-Do</h2>
-                        <span class="material-icons-sharp">check_circle</span>
-                    </div>
-                    <ul class="todo-preview" id="todo-preview">
-                        <li>Loading...</li>
-                    </ul>
+                    
                 </div>
             `;
-
-            // Fetch oldest 2 uncrossed todos
-            fetch('/api/right-panel-todos')
-                .then(res => res.json())
-                .then(todoData => {
-                    const list = document.getElementById("todo-preview");
-                    list.innerHTML = "";
-
-                    if (todoData.todos.length === 0) {
-                        list.innerHTML = "<li>No pending tasks</li>";
-                        return;
-                    }
-
-                    todoData.todos.forEach(todo => {
-                        const li = document.createElement("li");
-                        li.textContent = todo.content;
-                        list.appendChild(li);
-                    });
-                });
         });
 });
 

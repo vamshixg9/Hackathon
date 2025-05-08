@@ -91,109 +91,34 @@
         </div>
       
         <!-- Recent Tickets -->
-        <div class="previous-logs">
-          <h2>Recent Tickets</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>User</th>
-                <th>Title</th>
-                <th>Status</th>
-                <th>Created At</th>
-              </tr>
-            </thead>
-            <tbody id="recent-ticket-body">
-              <!-- To be filled via JS -->
-            </tbody>
-          </table>
-        </div>
+        
       </main>
     <!-- End of Main -->
 
-    <!-- Right Section -->
-    <div class="right-section">
-        <div class="nav">
-            <button id="menu-btn">
-                <span class="material-icons-sharp">menu</span>
-            </button>
-            <div class="dark-mode">
-                <span class="material-icons-sharp active">light_mode</span>
-                <span class="material-icons-sharp">dark_mode</span>
-            </div>
-
-            <div class="profile">
-                <div class="info">
-                    <p>Hey, <b>Vikas San</b></p>
-                    <small class="text-muted">2407026</small>
-                </div>
-                <div class="profile-photo">
-                    <img src="static/profile-1.jpg">
-                </div>
-            </div>
-        </div>
-
-        <div class="user-profile">
-            <div class="logo">
-                <img src="static/building.png">
-                <h2>Vikas</h2>
-                <p>設計開発部</p>
-            </div>
-        </div>
-
-        <div class="reminders">
-            <div class="header">
-                <h2>Notifications</h2>
-                <span class="material-icons-sharp">notifications_none</span>
-            </div>
-
-            <div class="notification">
-                <div class="icon">
-                    <span class="material-icons-sharp">volume_up</span>
-                </div>
-                <div class="content">
-                    <div class="info">
-                        <h3>Meetings</h3>
-                        <small class="text_muted">08:00 AM - 12:00 PM</small>
-                    </div>
-                    <span class="material-icons-sharp">more_vert</span>
-                </div>
-            </div>
-
-            <div class="notification deactive">
-                <div class="icon">
-                    <span class="material-icons-sharp">edit</span>
-                </div>
-                <div class="content">
-                    <div class="info">
-                        <h3>To-Do</h3>
-                        <small class="text_muted">08:00 AM - 12:00 PM</small>
-                    </div>
-                    <span class="material-icons-sharp">more_vert</span>
-                </div>
-            </div>
-
-            <div class="notification add-reminder">
-                <div>
-                    <span class="material-icons-sharp">add</span>
-                    <h3>Add Reminder</h3>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- End of Right Section -->
-
+<!-- Right Section -->
+<div class="right-section" id="right-panel"></div>
 </div>
 
 <!-- JS files -->
-<script src="static/admin_home.js"></script>
+<!-- JS files -->
 <script src="static/dashboard.js"></script>
 <script src="static/logs.js"></script>
 <script src="static/tickets.js"></script>
 <script src="static/home.js"></script>
-<script src="active_page.js"></script>
-<script src="index.js"></script>
+<script src="static/active_page.js"></script>
+<script src="static/index.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-
+<script src="{{ url_for('static', filename='right_paneladmin.js') }}"></script>
+<script src="static/list.js"></script>
+<script>
+    function previewImage(event) {
+      const reader = new FileReader();
+      reader.onload = function(){
+        const output = document.getElementById('profile-preview');
+        output.src = reader.result;
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    }
+    </script>
 </body>
 </html>

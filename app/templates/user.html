@@ -59,23 +59,29 @@
         <!-- Example: Home, Timelogs, Tickets, etc. -->
         <main>
             <h1>User Profile</h1>
-            <div class="user-info">
-                <img id="profile-preview" src="{{ user.profile_pic or url_for('static', filename='profile-1.jpg') }}" alt="Profile Photo" />
-
-                         
-              <form action="{{ url_for('upload_profile') }}" method="POST" enctype="multipart/form-data">
-                <label for="photo">Upload new photo:</label>
-                <input type="file" name="photo" accept="image/*" onchange="previewImage(event)" />
-                <button type="submit">Upload</button>
-              </form>
-          
-              <div class="details">
-                <p><strong>Name:</strong> {{ user.name }}</p>
-                <p><strong>Email:</strong> {{ user.email }}</p>
-                <p><strong>Department:</strong> {{ user.department or 'N/A' }}</p>
-              </div>
+            <div class="profile-card">
+                <form action="{{ url_for('upload_profile') }}" method="POST">
+                    <div class="profile-photo">
+                        <img id="profile-preview" src="{{ user.profile_pic or url_for('static', filename='profile-1.jpg') }}" alt="Profile Photo" />
+                    </div>
+        
+                    <div class="profile-details">
+                        <label for="employee_id"><strong>Employee ID:</strong></label>
+                        <input type="text" name="employee_id" value="{{ user.employee_id }}" ><br><br>
+        
+                        <label for="name"><strong>Name:</strong></label>
+                        <input type="text" name="name" value="{{ user.name }}" required><br><br>
+        
+                        <label for="department"><strong>Department:</strong></label>
+                        <input type="text" name="department" value="{{ user.department or '' }}"><br><br>
+                    </div>
+        
+                    <button type="submit" class="btn-upload">Update Profile</button>
+                </form>
             </div>
-          </main>
+        </main>
+        
+        
     
     <!-- End of Main -->
 
