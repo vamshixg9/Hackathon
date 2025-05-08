@@ -117,7 +117,51 @@ def admin_home():
 
 @app.route("/user")
 def user():
-    return render_template("user.html")
+    user_email = session.get('email')
+    user = User.query.filter_by(email=user_email).first()
+    if not user:
+        return redirect(url_for('index'))
+
+    return render_template("user.html", user=user)
+
+
+
+import os
+from werkzeug.utils import secure_filename
+
+UPLOAD_FOLDER = os.path.join('static', 'uploads')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route("/upload_profile", methods=["POST"])
+def upload_profile():
+    user_email = session.get('email')
+    user = User.query.filter_by(email=user_email).first()
+
+    if not user or 'photo' not in request.files:
+        return redirect(url_for('user'))
+
+    file = request.files['photo']
+    if file.filename == '' or not allowed_file(file.filename):
+        return redirect(url_for('user'))
+
+    filename = secure_filename(file.filename)
+    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+    # Save the web-accessible path (not local system path)
+    user.profile_pic = f"/static/uploads/{filename}"
+    db.session.commit()
+
+    return redirect(url_for('user'))
+
+
+
+
+
 
 @app.route("/tickets")
 def tickets():
@@ -127,9 +171,6 @@ def tickets():
 def list_items():
     return render_template("list.html")
 
-@app.route("/admin_user")
-def admin_user():
-    return render_template("admin_user.html")
 
 @app.route("/admin_tickets")
 def admin_tickets():
@@ -143,10 +184,42 @@ def admin_offices():
 def admin_employees():
     return render_template("admin_employees.html")
 
-@app.route("/admin_admin")
-def admin_admin():
-    return render_template("admin_admin.html")
+@app.route("/admin_user")
+def admin_user():
+    user_email = session.get('email')
+    admin = User.query.filter_by(email=user_email, role="admin").first()
 
+    if not admin:
+        return redirect(url_for('index'))
+
+    return render_template("admin_user.html", admin=admin)
+
+
+@app.route("/admin_admin", methods=["GET", "POST"])
+def admin_admin():
+    user_email = session.get('email')
+    current_user = User.query.filter_by(email=user_email).first()
+
+    if not current_user or current_user.role != "admin":
+        return redirect(url_for("index"))
+
+    if request.method == "POST":
+        selected_id = request.form.get("employee_id")
+        action = request.form.get("action")
+
+        selected_user = User.query.get(selected_id)
+        if selected_user:
+            if action == "make":
+                selected_user.role = "admin"
+            elif action == "remove":
+                selected_user.role = "employee"
+            db.session.commit()
+            return redirect(url_for("admin_admin"))
+
+    # Show all users, even admins (so we can demote them)
+    employees = User.query.all()
+
+    return render_template("admin_admin.html", employees=employees)
 
 
 @app.route("/home")
@@ -616,20 +689,6 @@ def admin_scan():
         db.session.rollback()
         return jsonify({'success': False, 'message': f'Server error: {str(e)}'}), 500
     
-
-@app.route('/api/qr_status/<token>')
-def qr_status(token):
-    record = Attendance.query.filter_by(qr_token=token).first()
-
-    if not record:
-        # Token is no longer in DB: likely used and cleared
-        return jsonify({'used': True})
-
-    # If either time is populated, token was acted on
-    if record.checkin_time or record.checkout_time:
-        return jsonify({'used': True})
-
-    return jsonify({'used': False})
 
 
 @app.route('/api/generate_qr', methods=['POST'])

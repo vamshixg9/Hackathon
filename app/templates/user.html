@@ -55,11 +55,28 @@
     <!-- End of Sidebar Section -->
 
     <!-- Main Content Area -->
-    <main>
         <!-- This area will change depending on which page -->
         <!-- Example: Home, Timelogs, Tickets, etc. -->
-        
-    </main>
+        <main>
+            <h1>User Profile</h1>
+            <div class="user-info">
+                <img id="profile-preview" src="{{ user.profile_pic or url_for('static', filename='profile-1.jpg') }}" alt="Profile Photo" />
+
+                         
+              <form action="{{ url_for('upload_profile') }}" method="POST" enctype="multipart/form-data">
+                <label for="photo">Upload new photo:</label>
+                <input type="file" name="photo" accept="image/*" onchange="previewImage(event)" />
+                <button type="submit">Upload</button>
+              </form>
+          
+              <div class="details">
+                <p><strong>Name:</strong> {{ user.name }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>Department:</strong> {{ user.department or 'N/A' }}</p>
+              </div>
+            </div>
+          </main>
+    
     <!-- End of Main -->
 
 <!-- Right Section -->
@@ -79,6 +96,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="{{ url_for('static', filename='right_panel.js') }}"></script>
 <script src="static/list.js"></script>
+<script>
+    function previewImage(event) {
+      const reader = new FileReader();
+      reader.onload = function(){
+        const output = document.getElementById('profile-preview');
+        output.src = reader.result;
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    }
+    </script>
+    
+
 
 </body>
 </html>
