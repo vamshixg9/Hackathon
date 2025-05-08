@@ -4,7 +4,6 @@ from datetime import datetime, date
 db = SQLAlchemy()
 
 
-
 class User(db.Model):
     __tablename__ = 'users'
 
@@ -15,15 +14,20 @@ class User(db.Model):
     department = db.Column(db.String(100))
     role = db.Column(db.String(20), default='employee')  # 'admin' or 'employee'
     created_at = db.Column(db.DateTime, default=datetime.now)
-    manager_id    = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    # relationship to let an admin see their managers/employees:
-    team_members  = db.relationship('User', backref=db.backref('manager', remote_side=[id]))
 
-    # Relationship to attendance records
+    manager_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # Only if role == employee
+    office_id = db.Column(db.Integer, db.ForeignKey('offices.id'), nullable=True)
+
+    # Relationships
+    manager = db.relationship('User', remote_side=[id], backref='team_members')
+    office = db.relationship('Office', backref='employees')
     attendance_records = db.relationship('Attendance', back_populates='user')
 
     def __repr__(self):
         return f"<User {self.email} | {self.role}>"
+
+
+
 
 class Attendance(db.Model):
     __tablename__ = 'attendance'

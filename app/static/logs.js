@@ -1,42 +1,42 @@
-const logs = [];
-
-function pad(num) {
-    return num.toString().padStart(2, '0');
-}
-
-const locations = ['Office', 'Remote', 'Client Site']; // Random sample locations
-
-for (let i = 0; i < 50; i++) {
-    const date = new Date();
-    date.setDate(date.getDate() - i);
-
-    const formattedDate = `${date.getFullYear()}/${pad(date.getMonth() + 1)}/${pad(date.getDate())}`;
-    const clockIn = `08:${pad(Math.floor(Math.random() * 30))}`;
-    const clockOut = `17:${pad(30 + Math.floor(Math.random() * 30))}`;
-    const totalHours = Math.random() > 0.2 ? '08:00' : 'Active';
-    const location = locations[Math.floor(Math.random() * locations.length)];
-
-    logs.push({
-        Date: formattedDate,
-        ClockIn: clockIn,
-        ClockOut: clockOut,
-        Location: location,
-        TotalHrs: totalHours
-    });
-}
-
-
-const loadingIndicator = document.getElementById('loading'); // Assuming there's a loading spinner in your HTML
-loadingIndicator.style.display = 'block';
-
-fetch('/api/attendance')
-    .then(response => response.json())
-    .then(data => {
-        loadingIndicator.style.display = 'none'; // Hide loading spinner after data is fetched
-        renderAttendanceData(data.attendance); // Call your render function
+document.addEventListener("DOMContentLoaded", function () {    
+    fetch('/api/user/attendance-logs', {
+        method: 'GET',
+        credentials: 'include'
     })
-    .catch(error => {
-        loadingIndicator.style.display = 'none'; // Hide spinner on error
-        console.error('Error fetching attendance data:', error);
-    });
+        .then(res => res.json())
+        .then(data => {
+        if (!data.success) {
+            console.error("Failed to load logs:", data.message);
+            return;
+        }
 
+        const tbody = document.querySelector('.previous-logs table tbody');
+        if (!tbody) {
+            console.warn("Logs table body not found.");
+            return;
+        }
+
+        tbody.innerHTML = ""; // Clear previous rows
+
+        data.logs.forEach(log => {
+            const row = document.createElement('tr');
+
+            const date = new Date(log.date).toLocaleDateString();
+            const checkin = log.checkin_time ? new Date(log.checkin_time).toLocaleTimeString() : "—";
+            const checkout = log.checkout_time ? new Date(log.checkout_time).toLocaleTimeString() : "—";
+            const total = log.total_hours ? `${log.total_hours} hrs` : "—";
+
+            row.innerHTML = `
+                <td>${date}</td>
+                <td>${checkin}</td>
+                <td>${checkout}</td>
+                <td>${total}</td>
+                <td></td>
+            `;
+            tbody.appendChild(row);
+        });
+        })
+        .catch(err => {
+        console.error("Error fetching logs:", err);
+        });
+     });
