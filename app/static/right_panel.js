@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="profile">
                         <div class="info">
                             <p>Hey, <b>${user.name}</b></p>
-                            <small class="text-muted">${user.id}</small>
+                            <small class="text-muted">${user.employee_id}</small>
                         </div>
                         <div class="profile-photo">
                             <img src="${user.profile_pic}">

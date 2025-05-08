@@ -145,6 +145,7 @@ def upload_profile():
     if not user:
         return redirect(url_for('index'))
 
+    user.employee_id = request.form.get('name', user.employee_id)
     user.name = request.form.get('name', user.name)
     user.department = request.form.get('department', user.department)
     user.role = request.form.get('role', user.role)

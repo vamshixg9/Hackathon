@@ -58,34 +58,37 @@
         <!-- End of Sidebar Section -->
     <!-- End of Sidebar Section -->
 
-    <!-- Main Content Area -->
-        <!-- This area will change depending on which page -->
-        <!-- Example: Home, Timelogs, Tickets, etc. -->
-        <main>
-            <h1>User Profile</h1>
-            <div class="user-info">
-                <img id="profile-preview" src="{{ admin.profile_pic or url_for('static', filename='profile-1.jpg') }}" alt="Profile Photo" />
-                <form action="{{ url_for('upload_Adminprofile') }}" method="POST" enctype="multipart/form-data">
-                    <label for="photo">Upload new photo:</label>
-                    <input type="file" name="photo" accept="image/*" onchange="previewImage(event)" />
-                
-                    <label for="name">Name:</label>
+    <main>
+        <h1>Admin Profile</h1>
+        <div class="profile-card">
+            <form action="{{ url_for('upload_Adminprofile') }}" method="POST">
+                <div class="profile-photo">
+                    <img id="profile-preview" src="{{ admin.profile_pic or url_for('static', filename='profile-1.jpg') }}" alt="Admin Photo" />
+                </div>
+    
+                <div class="profile-details">
+                    <label for="employee_id"><strong>Employee ID:</strong></label>
+                    <input type="text" name="employee_id" value="{{ admin.id }}" readonly><br><br>
+    
+                    <label for="name"><strong>Name:</strong></label>
                     <input type="text" name="name" value="{{ admin.name }}" required><br><br>
-                  
-                    <label for="department">Department:</label>
+    
+                    <label for="department"><strong>Department:</strong></label>
                     <input type="text" name="department" value="{{ admin.department or '' }}"><br><br>
-                  
-                    <label for="role">Role:</label>
+    
+                    <label for="role"><strong>Role:</strong></label>
                     <select name="role">
-                      <option value="employee" {% if admin.role == 'employee' %}selected{% endif %}>Employee</option>
-                      <option value="admin" {% if admin.role == 'admin' %}selected{% endif %}>Admin</option>
+                        <option value="employee" {% if admin.role == 'employee' %}selected{% endif %}>Employee</option>
+                        <option value="admin" {% if admin.role == 'admin' %}selected{% endif %}>Admin</option>
                     </select><br><br>
-                
-                    <button type="submit">Update Profile</button>
-                </form>
-                
-            </div>
-          </main>
+                </div>
+    
+                <button type="submit" class="btn-upload">Update Profile</button>
+            </form>
+        </div>
+    </main>
+    
+    
     <!-- End of Main -->
 
 <!-- Right Section -->
@@ -115,8 +118,5 @@
       reader.readAsDataURL(event.target.files[0]);
     }
     </script>
-    
-
-
 </body>
 </html>
