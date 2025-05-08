@@ -18,7 +18,8 @@ class User(db.Model):
     manager_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     office_id = db.Column(db.Integer, db.ForeignKey('offices.id'), nullable=True)
 
-    # Relationships
+    employee_id = db.Column(db.BigInteger, unique=True, nullable=True)  # <-- Add this here
+
     manager = db.relationship('User', remote_side=[id], backref='team_members')
     office = db.relationship('Office', backref='employees', foreign_keys=[office_id])
 

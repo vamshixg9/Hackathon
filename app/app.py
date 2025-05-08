@@ -803,6 +803,35 @@ def attendance_status():
     })
 
 
+@app.route('/api/verify_location', methods=['POST'])
+def verify_location():
+    user_email = session.get('email')
+    if not user_email:
+        return jsonify({'allowed': False, 'message': 'Unauthorized'}), 401
+
+    user = User.query.filter_by(email=user_email).first()
+    if not user or not user.office:
+        return jsonify({'allowed': False, 'message': 'No assigned office'}), 403
+
+    data = request.get_json()
+    user_lat = data.get('lat')
+    user_lng = data.get('lng')
+
+    if user_lat is None or user_lng is None:
+        return jsonify({'allowed': False, 'message': 'Missing coordinates'}), 400
+
+    from geopy.distance import geodesic
+
+    office_coords = (user.office.latitude, user.office.longitude)
+    user_coords = (user_lat, user_lng)
+
+    distance = geodesic(user_coords, office_coords).meters
+
+    if distance <= user.office.radius_meters:
+        return jsonify({'allowed': True})
+    else:
+        return jsonify({'allowed': False, 'message': 'Outside geofence'})
+
 
 
 

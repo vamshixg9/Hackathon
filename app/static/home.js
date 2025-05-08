@@ -1,3 +1,25 @@
+function getCurrentLocation() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject("Geolocation not supported.");
+    } else {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        (error) => {
+          reject("Error getting location.");
+        },
+        { timeout: 10000 }
+      );
+    }
+  });
+}
+
+
 document.addEventListener("DOMContentLoaded", function () {
   const qrModal = document.getElementById("qr-modal");
   const qrClose = document.getElementById("qr-close");
@@ -54,41 +76,54 @@ document.addEventListener("DOMContentLoaded", function () {
   // Function to open QR modal and generate QR code
   async function generateAndShowQR() {
     try {
+      const location = await getCurrentLocation();
+      const verifyRes = await fetch('/api/verify_location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(location)
+      });
+  
+      const verifyData = await verifyRes.json();
+      if (!verifyData.allowed) {
+        alert("You're not within your assigned office location.");
+        return;
+      }
+  
+      // Location approved: proceed to get QR
       const res = await fetch('/api/generate_qr', { method: 'POST' });
       const data = await res.json();
-
+  
       if (data.success) {
         const token = data.token;
-
         qrCodeContainer.innerHTML = "";
-
         qrInstance = new QRCode(qrCodeContainer, {
           text: token,
           width: 200,
           height: 200
         });
-
         qrModal.style.display = "flex";
-
+  
         pollInterval = setInterval(async () => {
           const response = await fetch('/api/check_qr_status');
-          const data = await response.json();
-
-          if (data.used) {
+          const pollData = await response.json();
+  
+          if (pollData.used) {
             clearInterval(pollInterval);
             qrModal.style.display = "none";
             fetchAttendanceStatus();
           }
         }, 2000);
-
       } else {
         alert("Failed to generate QR.");
       }
+  
     } catch (err) {
       console.error(err);
-      alert("An error occurred while generating QR.");
+      alert("Error: " + err);
     }
   }
+  
 
 
 
