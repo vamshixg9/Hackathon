@@ -61,19 +61,19 @@
             <h1>User Profile</h1>
             <div class="user-info">
                 <img id="profile-preview" src="{{ user.profile_pic or url_for('static', filename='profile-1.jpg') }}" alt="Profile Photo" />
-
-                         
-              <form action="{{ url_for('upload_profile') }}" method="POST" enctype="multipart/form-data">
-                <label for="photo">Upload new photo:</label>
-                <input type="file" name="photo" accept="image/*" onchange="previewImage(event)" />
-                <button type="submit">Upload</button>
-              </form>
-          
-              <div class="details">
-                <p><strong>Name:</strong> {{ user.name }}</p>
-                <p><strong>Email:</strong> {{ user.email }}</p>
-                <p><strong>Department:</strong> {{ user.department or 'N/A' }}</p>
-              </div>
+                <form action="{{ url_for('upload_profile') }}" method="POST" enctype="multipart/form-data">
+                    <label for="photo">Upload new photo:</label>
+                    <input type="file" name="photo" accept="image/*" onchange="previewImage(event)" />
+                
+                    <label for="name">Name:</label>
+                    <input type="text" name="name" value="{{ user.name }}" required><br><br>
+                  
+                    <label for="department">Department:</label>
+                    <input type="text" name="department" value="{{ user.department or '' }}"><br><br>
+                
+                    <button type="submit">Update Profile</button>
+                </form>
+                
             </div>
           </main>
     

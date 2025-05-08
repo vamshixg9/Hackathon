@@ -137,30 +137,52 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route("/upload_profile", methods=["POST"])
+@app.route('/upload_profile', methods=['POST'])
 def upload_profile():
     user_email = session.get('email')
     user = User.query.filter_by(email=user_email).first()
 
-    if not user or 'photo' not in request.files:
-        return redirect(url_for('user'))
+    if not user:
+        return redirect(url_for('index'))
 
-    file = request.files['photo']
-    if file.filename == '' or not allowed_file(file.filename):
-        return redirect(url_for('user'))
+    user.name = request.form.get('name', user.name)
+    user.department = request.form.get('department', user.department)
+    user.role = request.form.get('role', user.role)
 
-    filename = secure_filename(file.filename)
-    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    if 'photo' in request.files:
+        file = request.files['photo']
+        if file and file.filename:
+            filename = secure_filename(file.filename)
+            upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(upload_path)
+            user.profile_pic = f"/static/uploads/{filename}"
 
-    # Save the web-accessible path (not local system path)
-    user.profile_pic = f"/static/uploads/{filename}"
     db.session.commit()
-
     return redirect(url_for('user'))
 
 
+@app.route('/upload_Adminprofile', methods=['POST'])
+def upload_Adminprofile():
+    user_email = session.get('email')
+    admin = User.query.filter_by(email=user_email).first()
 
+    if not user:
+        return redirect(url_for('index'))
 
+    admin.name = request.form.get('name', admin.name)
+    admin.department = request.form.get('department', admin.department)
+    admin.role = request.form.get('role', admin.role)
+
+    if 'photo' in request.files:
+        file = request.files['photo']
+        if file and file.filename:
+            filename = secure_filename(file.filename)
+            upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            file.save(upload_path)
+            user.profile_pic = f"/static/uploads/{filename}"
+
+    db.session.commit()
+    return redirect(url_for('user'))
 
 
 @app.route("/tickets")
