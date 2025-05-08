@@ -415,6 +415,22 @@ main .previous-logs a{
     color: var(--color-primary);
 }
 
+main .previous-logs {
+    max-height: 400px; /* Adjust height as needed */
+    overflow-y: auto;
+}
+
+main .previous-logs table {
+    min-width: 600px; /* Optional: maintain readability on smaller screens */
+}
+
+main .log-table-wrapper {
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+
 /*End of previous logs*/
 
 

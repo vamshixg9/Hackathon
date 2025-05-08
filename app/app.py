@@ -515,6 +515,38 @@ def right_panel_todos():
         "todos": [{"id": t.id, "content": t.content} for t in todos]
     })
 
+@app.route('/api/user/attendance-logs')
+def user_attendance_logs():
+    user_email = session.get('email')
+    if not user_email:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+
+    user = User.query.filter_by(email=user_email).first()
+    if not user:
+        return jsonify({'success': False, 'message': 'User not found'}), 404
+
+    logs = (
+        Attendance.query
+        .filter_by(user_id=user.id)
+        .order_by(Attendance.date.desc())
+        .limit(30)  # adjust limit as needed
+        .all()
+    )
+
+    return jsonify({
+        'success': True,
+        'logs': [
+            {
+                'date': att.date.isoformat(),
+                'checkin_time': att.checkin_time.isoformat() if att.checkin_time else None,
+                'checkout_time': att.checkout_time.isoformat() if att.checkout_time else None,
+                'total_hours': att.total_hours
+            }
+            for att in logs
+        ]
+    })
+
+
 
 @app.route('/api/ticket-count')
 def ticket_count():
@@ -658,6 +690,9 @@ def expire_qr():
 from flask import jsonify, session
 from datetime import date
 from models import Attendance, User
+from flask import jsonify, session
+from datetime import date
+from models import Attendance, User
 
 @app.route('/api/user/attendance-status')
 def attendance_status():
@@ -669,25 +704,46 @@ def attendance_status():
     if not user:
         return jsonify({'success': False, 'message': 'User not found'}), 404
 
-    today = date.today()
-    record = Attendance.query.filter_by(user_id=user.id, date=today).first()
+    # Get the most recent attendance record
+    record = (Attendance.query
+              .filter_by(user_id=user.id)
+              .order_by(Attendance.date.desc(), Attendance.id.desc())  # Just in case
+              .first())
 
     if record:
-        return jsonify({
-            'success': True,
-            'checked_in': record.checkin_time is not None,
-            'checkin_time': record.checkin_time.isoformat() if record.checkin_time else None,
-            'checkout_time': record.checkout_time.isoformat() if record.checkout_time else None,
-            'total_hours': record.total_hours
-        })
+        checkin_time = record.checkin_time
+        checkout_time = record.checkout_time
 
+        if not checkin_time or (checkin_time and checkout_time):
+            # No checkin yet or already checked out => allow checkin
+            return jsonify({
+                'success': True,
+                'checkin_time': checkin_time.isoformat() if checkin_time else None,
+                'checkout_time': checkout_time.isoformat() if checkout_time else None,
+                'enable_checkin': True,
+                'enable_checkout': False
+            })
+
+        else:
+            # Checkin exists, but checkout not done => allow checkout
+            return jsonify({
+                'success': True,
+                'checkin_time': checkin_time.isoformat(),
+                'checkout_time': None,
+                'enable_checkin': False,
+                'enable_checkout': True
+            })
+
+    # No record at all => allow checkin
     return jsonify({
         'success': True,
-        'checked_in': False,
         'checkin_time': None,
         'checkout_time': None,
-        'total_hours': 0.0
+        'enable_checkin': True,
+        'enable_checkout': False
     })
+
+
 
 
 

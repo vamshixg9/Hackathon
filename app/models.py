@@ -13,17 +13,18 @@ class User(db.Model):
     password_hash = db.Column(db.String(128), nullable=False)
     name = db.Column(db.String(100))
     department = db.Column(db.String(100))
-    role = db.Column(db.String(20), default='employee')  # 'admin' or 'employee'
+    employee_id = db.Column(db.String(50), unique=True, nullable=True)
+    profile_photo = db.Column(db.String(256))
+    role = db.Column(db.String(20), default='employee')
     created_at = db.Column(db.DateTime, default=datetime.now)
-    manager_id    = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    # relationship to let an admin see their managers/employees:
-    team_members  = db.relationship('User', backref=db.backref('manager', remote_side=[id]))
+    manager_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    team_members = db.relationship('User', backref=db.backref('manager', remote_side=[id]))
 
-    # Relationship to attendance records
     attendance_records = db.relationship('Attendance', back_populates='user')
 
     def __repr__(self):
         return f"<User {self.email} | {self.role}>"
+
 
 class Attendance(db.Model):
     __tablename__ = 'attendance'
