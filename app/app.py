@@ -848,16 +848,20 @@ def verify_location():
     office = user.office
     office_coords = (office.latitude, office.longitude)
     user_coords = (user_lat, user_lng)
+    print(user_coords)
 
     if office.latitude is None or office.longitude is None or office.radius_meters is None:
         return jsonify({'allowed': False, 'message': 'Office location is not properly set.'}), 500
 
     distance = geodesic(user_coords, office_coords).meters
+    print(distance)
 
     if distance <= office.radius_meters:
         return jsonify({'allowed': True})
     else:
         return jsonify({'allowed': False, 'message': f'Outside geofence. Distance: {distance:.2f}m'}), 403
+
+
 
 
 

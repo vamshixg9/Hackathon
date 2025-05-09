@@ -29,6 +29,23 @@ class User(db.Model):
         return f"<User {self.email} | {self.role}>"
 
 
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+
+
+class WebAuthnCredential(db.Model):
+    __tablename__ = 'webauthn_credentials'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    credential_id = db.Column(db.String(255), unique=True, nullable=False)
+    public_key = db.Column(db.Text, nullable=False)
+    sign_count = db.Column(db.Integer, default=0)
+    transports = db.Column(db.String(100))  # optional
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref='webauthn_credentials')
+
 
 class Attendance(db.Model):
     __tablename__ = 'attendance'

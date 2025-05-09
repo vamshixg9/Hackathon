@@ -8,6 +8,8 @@ Morabu Hackathon April 2025
 - weasyprint
 - python-dotenv sqlalchemy psycopg2
 - geopy
+- webauthn
+- fido2
 
 
 
