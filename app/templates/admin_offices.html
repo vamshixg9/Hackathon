@@ -76,66 +76,67 @@
         </style>
     <main>
         <h1>Office Management</h1>
-    
-        <!-- Section 1: Office List -->
-        <div class="card">
-            <h2>All Offices</h2>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Office Name</th>
-                        <th>Latitude</th>
-                        <th>Longitude</th>
-                        <th>Map</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for office in offices %}
-                    <tr>
-                        <td>{{ office.name }}</td>
-                        <td>{{ office.latitude }}</td>
-                        <td>{{ office.longitude }}</td>
-                        <td>
-                            <a href="https://www.google.com/maps?q={{ office.latitude }},{{ office.longitude }}" target="_blank">View</a>
-                        </td>
-                        <td>
-                            <form method="POST" action="{{ url_for('remove_office') }}" style="display:inline;">
-                                <input type="hidden" name="office_id" value="{{ office.id }}">
-                                <button type="submit" class="btn-danger">Remove</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    
+      
+        <!-- Section 1: Existing Offices -->
+        <!-- Section 1: Existing Offices -->
+<div class="card">
+    <h2>All Offices</h2>
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>Map</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for office in offices %}
+          <tr>
+            <td>{{ office.name }}</td>
+            <td>{{ office.latitude }}</td>
+            <td>{{ office.longitude }}</td>
+            <td><a href="https://www.google.com/maps?q={{ office.latitude }},{{ office.longitude }}" target="_blank">View</a></td>
+            <td>
+              <form method="POST" action="{{ url_for('remove_office') }}" style="display:inline;">
+                <input type="hidden" name="office_id" value="{{ office.id }}">
+                <button type="submit" class="btn-danger">Remove</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+      
         <!-- Section 2: Add New Office -->
         <div class="card">
-            <h2>Add New Office</h2>
-            <form method="POST" action="{{ url_for('admin_offices') }}" class="form-control">
-                <div class="form-group">
-                    <label for="name">Office Name</label>
-                    <input type="text" name="name" id="name" required class="input-text">
-                </div>
-                <div class="form-group">
-                    <label for="latitude">Latitude</label>
-                    <input type="number" step="any" name="latitude" id="latitude" required class="input-text">
-                </div>
-                <div class="form-group">
-                    <label for="longitude">Longitude</label>
-                    <input type="number" step="any" name="longitude" id="longitude" required class="input-text">
-                </div>
-                <div class="form-group">
-                    <div id="map"></div>
-                </div>
-                <div class="form-group">
-                    <button type="submit" class="btn-primary">Add Office</button>
-                </div>
-            </form>
+          <h2>Add New Office</h2>
+          <form method="POST" action="{{ url_for('admin_offices') }}">
+            <div class="form-group">
+              <label for="name">Office Name</label>
+              <input type="text" name="name" id="name" required class="input-text" />
+            </div>
+            <div class="form-group">
+              <label for="latitude">Latitude</label>
+              <input type="number" step="any" name="latitude" id="latitude" required class="input-text" />
+            </div>
+            <div class="form-group">
+              <label for="longitude">Longitude</label>
+              <input type="number" step="any" name="longitude" id="longitude" required class="input-text" />
+            </div>
+            <div id="map"></div>
+            <div class="form-group">
+              <button type="submit" class="btn-primary">Add Office</button>
+            </div>
+          </form>
         </div>
-    </main>
+      </main>
+      
     
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -205,6 +206,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="{{ url_for('static', filename='right_paneladmin.js') }}"></script>
 <script src="static/list.js"></script>
+<script src="static/admin_offices.js"></script>
 <script>
     function previewImage(event) {
       const reader = new FileReader();

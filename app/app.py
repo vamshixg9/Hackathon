@@ -199,13 +199,8 @@ def list_items():
 def admin_tickets():
     return render_template("admin_tickets.html")
 
-@app.route("/admin_offices")
-def admin_offices():
-    return render_template("admin_offices.html")
 
-@app.route("/admin_employees")
-def admin_employees():
-    return render_template("admin_employees.html")
+
 
 @app.route("/admin_user")
 def admin_user():
@@ -861,6 +856,89 @@ def verify_location():
     else:
         return jsonify({'allowed': False, 'message': f'Outside geofence. Distance: {distance:.2f}m'}), 403
 
+from models import Office
+@app.route("/admin_employees", methods=["GET", "POST"])
+def admin_employees():
+    user_email = session.get('email')
+    admin = User.query.filter_by(email=user_email, role="admin").first()
+    if not admin:
+        return redirect(url_for("index"))
+
+    if request.method == "POST":
+        email = request.form.get("email")
+        user = User.query.filter_by(email=email).first()
+
+        if user:
+            user.manager_id = admin.id
+            user.office_id = admin.office_id
+            db.session.commit()
+        else:
+            # Optional: create new placeholder user, or flash error
+            flash("User with that email does not exist.", "danger")
+            return redirect(url_for("admin_employees"))
+
+        return redirect(url_for("admin_employees"))
+
+    employees = User.query.filter_by(manager_id=admin.id).all()
+    return render_template("admin_employees.html", employees=employees)
+
+@app.route("/remove_employee", methods=["POST"])
+def remove_employee():
+    user_email = session.get('email')
+    admin = User.query.filter_by(email=user_email, role="admin").first()
+    if not admin:
+        return redirect(url_for("index"))
+
+    employee_id = request.form.get("employee_id")
+    user = User.query.filter_by(id=employee_id, manager_id=admin.id).first()
+
+    if user:
+        db.session.delete(user)
+        db.session.commit()
+
+    return redirect(url_for("admin_employees"))
+
+
+@app.route("/admin_offices", methods=["GET", "POST"])
+def admin_offices():  # <-- renamed
+    user_email = session.get('email')
+    admin = User.query.filter_by(email=user_email, role="admin").first()
+
+    if not admin:
+        return redirect(url_for("index"))
+
+    if request.method == "POST":
+        name = request.form.get("name")
+        lat = request.form.get("latitude")
+        lng = request.form.get("longitude")
+
+        if name and lat and lng:
+            office = Office(
+                name=name,
+                latitude=float(lat),
+                longitude=float(lng),
+                admin_id=admin.id  # initially assigned to creator
+            )
+            db.session.add(office)
+            db.session.commit()
+            return redirect(url_for("admin_offices"))
+
+    offices = Office.query.order_by(Office.created_at.desc()).all()
+    return render_template("admin_offices.html", offices=offices)
+
+
+@app.route("/remove_office", methods=["POST"])
+def remove_office():
+    user_email = session.get('email')
+    admin = User.query.filter_by(email=user_email, role="admin").first()
+    office_id = request.form.get("office_id")
+
+    office = Office.query.get(office_id)
+    if office and office.admin_id == admin.id:
+        db.session.delete(office)
+        db.session.commit()
+
+    return redirect(url_for("admin_offices"))
 
 
 
@@ -873,6 +951,6 @@ def logout():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
 
 
