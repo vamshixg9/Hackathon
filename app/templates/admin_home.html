@@ -39,7 +39,7 @@
                 <h3>User</h3>
             </a>
             <a href="{{ url_for('admin_admin') }}">
-                <span class="material-icons-sharp">person_outline</span>
+                <span class="material-icons-sharp">admin_panel_settings</span>
                 <h3>Admin</h3>
             </a>
             <a href="{{ url_for('admin_employees') }}">
@@ -70,16 +70,16 @@
       
         <!-- Scanner Section -->
         <div class="analyse">
-          <div class="check-card" id="admin-scan-card">
+        
+          <div class="check-card" id="start-scan-btn" role="button" tabindex="0">
             <div class="card-header">
               <span class="material-icons-sharp">qr_code_scanner</span>
               <h3>Scan QR</h3>
             </div>
-            <div class="card-body">
-              <button id="start-scan-btn" class="scan-btn">Start Scan</button>
-            </div>
+            
           </div>
         </div>
+        
       
         <!-- QR Scanner Modal -->
         <div id="scanner-modal" class="qr-modal" style="display: none;">
