@@ -218,3 +218,4 @@ function pad(num) {
 document.addEventListener('DOMContentLoaded', () => {
   fetchAttendanceStatus();
 });
+

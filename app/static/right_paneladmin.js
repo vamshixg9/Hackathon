@@ -38,6 +38,20 @@ document.addEventListener("DOMContentLoaded", () => {
                     
                 </div>
             `;
+            const menuBtn = document.getElementById("menu-btn");
+            const closeBtn = document.getElementById("close-btn");
+            const sidebar = document.querySelector("aside");
+
+            if (menuBtn && sidebar) {
+                menuBtn.addEventListener("click", () => {
+                    sidebar.style.display = "block";
+                });
+            }
+            if (closeBtn && sidebar) {
+                closeBtn.addEventListener("click", () => {
+                    sidebar.style.display = "none";
+                });
+            }
         });
 });
 
