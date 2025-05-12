@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify, session, render_template, redirect, url_for
-from authenticate import authenticate
 from send_otp import send_otp
 from validate import validate_otp  # You'll write this soon
 from flask_cors import CORS
@@ -47,6 +46,25 @@ with app.app_context():
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+import smtplib
+import random
+from email.mime.text import MIMEText
+
+def authenticate(email_input: str, password_input: str) -> bool:
+    try:
+        with smtplib.SMTP("morabu.com", 587, timeout=5) as server:
+            server.starttls()
+            server.login(email_input, password_input)
+            return True
+    except smtplib.SMTPAuthenticationError as e:
+        print("[!] SMTP Authentication failed.")
+        print(f"Code: {e.smtp_code}, Message: {e.smtp_error.decode()}")
+        return False
+    except Exception as e:
+        print(f"[!] Other error: {e}")
+        return False
 
 @app.route('/login', methods=['POST'])
 def login():
