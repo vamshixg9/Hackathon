@@ -72,31 +72,43 @@ def login():
     email = data.get('email')
     password = data.get('password')
 
-    if not email.endswith('@morabu.com'):
+    if not email:
+        return jsonify({'success': False, 'message': 'Email is required'}), 400
+
+    is_guest = password == "guest"
+
+    # Block non-morabu domains for regular users only
+    if not is_guest and not email.endswith('@morabu.com'):
         return jsonify({'success': False, 'message': 'Invalid email domain'}), 400
 
-    if not authenticate(email, password):
+    # Authenticate only for non-guest users
+    if not is_guest and not authenticate(email, password):
         return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
-    
-     # Check if user exists
+
+    # Check if user exists in DB
     user = User.query.filter_by(email=email).first()
     if not user:
-        # Insert user with dummy hash (replace later with real hash)
-        user = User(email=email, password_hash="placeholder_hashed_pw", role="employee", name="Unknown")
+        user = User(
+            email=email,
+            password_hash="placeholder_hashed_pw" if not is_guest else "guest",
+            role="employee",
+            name="Guest" if is_guest else "Unknown"
+        )
         db.session.add(user)
         db.session.commit()
 
-    # Send OTP
+    # Generate and send OTP
     otp = send_otp('diksha@morabu.com', 'uzqgy48b', email)
     session['otp'] = otp
     session['email'] = email
 
-    # Save OTP in OTPLog (optional but useful)
+    # Log OTP for auditing
     otp_entry = OTPLog(user_id=user.id, otp_code=otp)
     db.session.add(otp_entry)
     db.session.commit()
 
     return jsonify({'success': True, 'message': 'OTP sent to your email'}), 200
+
 
 
 @app.route("/verify_otp", methods=["POST"])

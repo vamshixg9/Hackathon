@@ -142,3 +142,24 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(26px);
 }
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+button.outline {
+  background-color: transparent;
+  border: 2px solid #1976d2;
+  color: #1976d2;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button.outline:hover {
+  background-color: #1976d2;
+  color: white;
+}
