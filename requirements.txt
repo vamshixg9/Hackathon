@@ -1,0 +1,12 @@
+flask-cors
+flask_sqlalchemy
+openpyxl
+reportlab
+weasyprint
+python-dotenv 
+sqlalchemy 
+psycopg2
+geopy
+webauthn
+fido2
+pytz

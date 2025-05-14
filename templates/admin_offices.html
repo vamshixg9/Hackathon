@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morabu Dashboard</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+    <link rel="stylesheet" href="static/dash_styles.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
+   <!-- Put this in the <head> or before </body> -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body>
+    
+      
+
+<div class="container">
+    <!-- Sidebar Section -->
+    <aside>
+        <div class="toggle">
+            <div class="logo">
+                <img src="static/building.png">
+                <h2><span class="danger">Morabu</span></h2>
+            </div>
+            <div class="close" id="close-btn">
+                <span class="material-icons-sharp">close</span>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <a href="{{ url_for('admin_home') }}" id="home-link">
+                <span class="material-icons-sharp">dashboard</span>
+                <h3>Home</h3>
+            </a>
+            <a href="{{ url_for('admin_user') }}">
+                <span class="material-icons-sharp">person_outline</span>
+                <h3>User</h3>
+            </a>
+            <a href="{{ url_for('admin_admin') }}">
+                <span class="material-icons-sharp">admin_panel_settings</span>
+                <h3>Admin</h3>
+            </a>
+            <a href="{{ url_for('admin_employees') }}">
+                <span class="material-icons-sharp">insights</span>
+                <h3>Employees</h3>
+            </a>
+            <a href="{{ url_for('admin_tickets') }}" id="ticket-link">
+                <span class="material-icons-sharp">mail_outline</span>
+                <h3>Tickets</h3>
+                <span class="message-count">9</span>
+            </a>
+            <a href="{{ url_for('admin_offices') }}">
+                <span class="material-icons-sharp">inventory</span>
+                <h3>Offices</h3>
+            </a>
+            <a href="{{ url_for('logout') }}">
+                <span class="material-icons-sharp">logout</span>
+                <h3>Logout</h3>
+            </a>
+        </div>
+        
+    </aside>
+    <!-- End of Sidebar Section -->
+
+    <!-- Main Content Area -->
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+        <style>
+            #map {
+                height: 300px;
+                width: 100%;
+                border: 1px solid #ccc;
+                margin-top: 10px;
+            }
+        </style>
+    <main>
+        <h1>Office Management</h1>
+      
+        <!-- Section 1: Existing Offices -->
+        <!-- Section 1: Existing Offices -->
+<div class="card">
+    <h2>All Offices</h2>
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>Map</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for office in offices %}
+          <tr>
+            <td>{{ office.name }}</td>
+            <td>{{ office.latitude }}</td>
+            <td>{{ office.longitude }}</td>
+            <td><a href="https://www.google.com/maps?q={{ office.latitude }},{{ office.longitude }}" target="_blank">View</a></td>
+            <td>
+              <form method="POST" action="{{ url_for('remove_office') }}" style="display:inline;">
+                <input type="hidden" name="office_id" value="{{ office.id }}">
+                <button type="submit" class="btn-danger">Remove</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  
+      
+        <!-- Section 2: Add New Office -->
+        <div class="card">
+          <h2>Add New Office</h2>
+          <form method="POST" action="{{ url_for('admin_offices') }}">
+            <div class="form-group">
+              <label for="name">Office Name</label>
+              <input type="text" name="name" id="name" required class="input-text" />
+            </div>
+            <div class="form-group">
+              <label for="latitude">Latitude</label>
+              <input type="number" step="any" name="latitude" id="latitude" required class="input-text" />
+            </div>
+            <div class="form-group">
+              <label for="longitude">Longitude</label>
+              <input type="number" step="any" name="longitude" id="longitude" required class="input-text" />
+            </div>
+            <div id="map"></div>
+            <div class="form-group">
+              <button type="submit" class="btn-primary">Add Office</button>
+            </div>
+          </form>
+        </div>
+      </main>
+      
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([20.5937, 78.9629], 5); // Center on India
+        const latInput = document.getElementById('latitude');
+        const lngInput = document.getElementById('longitude');
+    
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+    
+        let marker;
+    
+        function updateMarker(lat, lng) {
+            const latLng = [parseFloat(lat), parseFloat(lng)];
+            if (marker) {
+                marker.setLatLng(latLng);
+            } else {
+                marker = L.marker(latLng, { draggable: true }).addTo(map);
+                marker.on('dragend', function (e) {
+                    const pos = e.target.getLatLng();
+                    latInput.value = pos.lat.toFixed(6);
+                    lngInput.value = pos.lng.toFixed(6);
+                });
+            }
+            map.setView(latLng, 10);
+        }
+    
+        // Map click to place marker and fill inputs
+        map.on('click', function(e) {
+            const lat = e.latlng.lat.toFixed(6);
+            const lng = e.latlng.lng.toFixed(6);
+            latInput.value = lat;
+            lngInput.value = lng;
+            updateMarker(lat, lng);
+        });
+    
+        // Input change to move marker
+        latInput.addEventListener('change', () => {
+            if (latInput.value && lngInput.value) {
+                updateMarker(latInput.value, lngInput.value);
+            }
+        });
+    
+        lngInput.addEventListener('change', () => {
+            if (latInput.value && lngInput.value) {
+                updateMarker(latInput.value, lngInput.value);
+            }
+        });
+    </script>
+    <!-- End of Main -->
+<!-- Right Section -->
+<div class="right-section" id="right-panel"></div>
+
+
+
+</div>
+
+<!-- JS files -->
+<script src="static/dashboard.js"></script>
+<script src="static/logs.js"></script>
+<script src="static/tickets.js"></script>
+<script src="static/home.js"></script>
+<script src="static/active_page.js"></script>
+<script src="static/index.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="{{ url_for('static', filename='right_paneladmin.js') }}"></script>
+<script src="static/list.js"></script>
+<script src="static/admin_offices.js"></script>
+<script>
+    function previewImage(event) {
+      const reader = new FileReader();
+      reader.onload = function(){
+        const output = document.getElementById('profile-preview');
+        output.src = reader.result;
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    }
+    </script>
+</body>
+</html>

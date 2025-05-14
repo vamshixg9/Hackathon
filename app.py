@@ -715,15 +715,20 @@ def admin_scan():
         return jsonify({'success': False, 'message': 'Invalid or expired token'}), 404
 
     try:
+        from datetime import datetime
+        from zoneinfo import ZoneInfo  # Available in Python 3.9+
+
+        tokyo_tz = ZoneInfo("Asia/Tokyo")
+
         if attendance.checkin_time is None:
             # Check-in flow
-            attendance.checkin_time = datetime.utcnow()
+            attendance.checkin_time = datetime.now(tokyo_tz)
             attendance.qr_token = None
             message = "Check-in successful"
 
         elif attendance.checkout_time is None:
             # Check-out flow
-            attendance.checkout_time = datetime.utcnow()
+            attendance.checkout_time = datetime.now(tokyo_tz)
             attendance.qr_token = None
             message = "Check-out successful"
 
@@ -801,6 +806,9 @@ from flask import jsonify, session
 from datetime import date
 from models import Attendance, User
 
+from datetime import datetime
+import pytz
+
 @app.route('/api/user/attendance-status')
 def attendance_status():
     user_email = session.get('email')
@@ -814,34 +822,41 @@ def attendance_status():
     # Get the most recent attendance record
     record = (Attendance.query
               .filter_by(user_id=user.id)
-              .order_by(Attendance.date.desc(), Attendance.id.desc())  # Just in case
+              .order_by(Attendance.date.desc(), Attendance.id.desc())
               .first())
 
-    if record:
-        checkin_time = record.checkin_time
-        checkout_time = record.checkout_time
+    # Timezone setup
+    jst = pytz.timezone("Asia/Tokyo")
 
-        if not checkin_time or (checkin_time and checkout_time):
-            # No checkin yet or already checked out => allow checkin
+    def to_jst(dt):
+        if dt is None:
+            return None
+        # Ensure UTC awareness
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=pytz.utc)
+        return dt.astimezone(jst).isoformat()
+
+    if record:
+        checkin_time = to_jst(record.checkin_time)
+        checkout_time = to_jst(record.checkout_time)
+
+        if not record.checkin_time or (record.checkin_time and record.checkout_time):
             return jsonify({
                 'success': True,
-                'checkin_time': checkin_time.isoformat() if checkin_time else None,
-                'checkout_time': checkout_time.isoformat() if checkout_time else None,
+                'checkin_time': checkin_time,
+                'checkout_time': checkout_time,
                 'enable_checkin': True,
                 'enable_checkout': False
             })
-
         else:
-            # Checkin exists, but checkout not done => allow checkout
             return jsonify({
                 'success': True,
-                'checkin_time': checkin_time.isoformat(),
+                'checkin_time': checkin_time,
                 'checkout_time': None,
                 'enable_checkin': False,
                 'enable_checkout': True
             })
 
-    # No record at all => allow checkin
     return jsonify({
         'success': True,
         'checkin_time': None,

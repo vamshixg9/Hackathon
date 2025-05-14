@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morabu Dashboard</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+    <link rel="stylesheet" href="static/dash_styles.css">
+</head>
+<body>
+
+<div class="container">
+    <!-- Sidebar Section -->
+    <aside>
+        <div class="toggle">
+            <div class="logo">
+                <img src="static/building.png">
+                <h2><span class="danger">Morabu</span></h2>
+            </div>
+            <div class="close" id="close-btn">
+                <span class="material-icons-sharp">close</span>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <a href="{{ url_for('home') }}" id="home-link">
+                <span class="material-icons-sharp">dashboard</span>
+                <h3>Home</h3>
+            </a>
+            <a href="{{ url_for('user') }}">
+                <span class="material-icons-sharp">person_outline</span>
+                <h3>User</h3>
+            </a>
+            <a href="{{ url_for('timelogs') }}">
+                <span class="material-icons-sharp">insights</span>
+                <h3>Timelogs</h3>
+            </a>
+            <a href="{{ url_for('tickets') }}" id="ticket-link">
+                <span class="material-icons-sharp">mail_outline</span>
+                <h3>Tickets</h3>
+                <span class="message-count" id="ticket-count">0</span> <!-- ID added here -->
+            </a>
+            </a>
+            <a href="{{ url_for('list_items') }}">
+                <span class="material-icons-sharp">inventory</span>
+                <h3>List</h3>
+            </a>
+            <a href="{{ url_for('index') }}">
+                <span class="material-icons-sharp">logout</span>
+                <h3>Logout</h3>
+            </a>
+        </div>
+        
+    </aside>
+    <!-- End of Sidebar Section -->
+
+    <!-- Main Content Area -->
+    <main>
+        <div class="todo-container">
+            <h2 class="todo-header">My Tasks</h2>
+            <form id="todo-form" class="todo-form">
+                <input type="text" id="todo-input" placeholder="What needs to be done?" required />
+            </form>
+            <ul id="todo-list" class="todo-list">
+                <!-- Tasks will be injected here -->
+            </ul>
+        </div>
+        
+    </main>
+    <!-- End of Main -->
+
+<!-- Right Section -->
+<div class="right-section" id="right-panel"></div>
+
+
+
+</div>
+
+<!-- JS files -->
+<script src="static/dashboard.js"></script>
+<script src="static/logs.js"></script>
+<script src="static/list.js"></script>
+<script src="static/tickets.js"></script>
+<script src="static/home.js"></script>
+<script src="static/active_page.js"></script>
+<script src="static/index.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="{{ url_for('static', filename='right_panel.js') }}"></script>
+
+
+</body>
+</html>

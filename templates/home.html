@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morabu Dashboard</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+    <link rel="stylesheet" href="static/dash_styles.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
+   <!-- Put this in the <head> or before </body> -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body>
+
+<div class="container">
+    <!-- Sidebar Section -->
+    <aside>
+        <div class="toggle">
+            <div class="logo">
+                <img src="static/building.png">
+                <h2><span class="danger">Morabu</span></h2>
+            </div>
+            <div class="close" id="close-btn">
+                <span class="material-icons-sharp">close</span>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <a href="{{ url_for('home') }}" id="home-link">
+                <span class="material-icons-sharp">dashboard</span>
+                <h3>Home</h3>
+            </a>
+            <a href="{{ url_for('user') }}">
+                <span class="material-icons-sharp">person_outline</span>
+                <h3>User</h3>
+            </a>
+            <a href="{{ url_for('timelogs') }}">
+                <span class="material-icons-sharp">insights</span>
+                <h3>Timelogs</h3>
+            </a>
+            <a href="{{ url_for('tickets') }}" id="ticket-link">
+              <span class="material-icons-sharp">mail_outline</span>
+              <h3>Tickets</h3>
+              <span class="message-count" id="ticket-count">0</span> <!-- ID added here -->
+          </a>
+            </a>
+            <a href="{{ url_for('list_items') }}">
+                <span class="material-icons-sharp">inventory</span>
+                <h3>List</h3>
+            </a>
+            <a href="{{ url_for('logout') }}">
+                <span class="material-icons-sharp">logout</span>
+                <h3>Logout</h3>
+            </a>
+        </div>
+        
+    </aside>
+    <!-- End of Sidebar Section -->
+
+    <!-- Main Content Area -->
+    <main>
+       
+    
+        <div class="analyse">
+          <!-- Check-In Card -->
+          <div class="check-card" id="checkin-card">
+            <div class="card-header">
+              <span class="material-icons-sharp">login</span>
+              <h3>Check-In</h3>
+            </div>
+            <div class="card-body">
+              <span id="clockin-status" class="status-badge pending">Not checked in</span>
+            </div>
+          </div>
+    
+          <!-- Check-Out Card -->
+          <div class="check-card disabled" id="checkout-card">
+            <div class="card-header">
+              <span class="material-icons-sharp">logout</span>
+              <h3>Check-Out</h3>
+            </div>
+            <div class="card-body">
+              <span id="clockout-status" class="status-badge pending">Not checked out</span>
+            </div>
+          </div>
+    
+          <!-- Timelog Card -->
+          <div class="timelog-card">
+            <div class="card-header">
+              <span class="material-icons-sharp">access_time</span>
+              <h3>Timelog</h3>
+            </div>
+            <div class="card-body">
+              <h1 id="timelog">00:00:00</h1>
+            </div>
+          </div>
+        </div>
+    
+        <!-- Previous Logs -->
+        <div class="previous-logs">
+          <h2>Previous Logs</h2>
+          <div class="log-table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Clock-In</th>
+                  <th>Clock-Out</th>
+                  <th>Total-Hrs</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <a href="#">Show All</a>
+        </div>
+        
+
+        <!-- QR Modal Container -->
+        <!-- QR Modal -->
+        <div id="qr-modal" class="qr-modal">
+            <div class="qr-content">
+            <span id="qr-close" class="material-icons-sharp qr-close">close</span>
+            <div id="qr-code"></div>
+            </div>
+        </div>
+        
+
+      </main>
+    <!-- End of Main -->
+
+    <!-- Right Section -->
+    <div class="right-section" id="right-panel"></div>
+
+
+
+</div>
+
+<!-- JS files -->
+<script src="static/dashboard.js"></script>
+<script src="static/logs.js"></script>
+<script src="static/tickets.js"></script>
+<script src="static/home.js"></script>
+<script src="static/active_page.js"></script>
+<script src="static/index.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="{{ url_for('static', filename='right_panel.js') }}"></script>
+<script src="static/list.js"></script>
+
+
+</body>
+</html>

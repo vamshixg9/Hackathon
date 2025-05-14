@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morabu Dashboard</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+    <link rel="stylesheet" href="static/dash_styles.css">
+</head>
+<body>
+
+    <div class="container">
+        <!-- Sidebar Section -->
+        <aside>
+            <div class="toggle">
+                <div class="logo">
+                    <img src="static/building.png">
+                    <h2><span class="danger">Morabu</span></h2>
+                </div>
+                <div class="close" id="close-btn">
+                    <span class="material-icons-sharp">close</span>
+                </div>
+            </div>
+    
+            <div class="sidebar">
+                <a href="{{ url_for('admin_home') }}" id="home-link">
+                    <span class="material-icons-sharp">dashboard</span>
+                    <h3>Home</h3>
+                </a>
+                <a href="{{ url_for('admin_user') }}">
+                    <span class="material-icons-sharp">person_outline</span>
+                    <h3>User</h3>
+                </a>
+                <a href="{{ url_for('admin_admin') }}">
+                    <span class="material-icons-sharp">admin_panel_settings</span>
+                    <h3>Admin</h3>
+                </a>
+                <a href="{{ url_for('admin_employees') }}">
+                    <span class="material-icons-sharp">insights</span>
+                    <h3>Employees</h3>
+                </a>
+                <a href="{{ url_for('admin_tickets') }}" id="ticket-link">
+                    <span class="material-icons-sharp">mail_outline</span>
+                    <h3>Tickets</h3>
+                    <span class="message-count">9</span>
+                </a>
+                <a href="{{ url_for('admin_offices') }}">
+                    <span class="material-icons-sharp">inventory</span>
+                    <h3>Offices</h3>
+                </a>
+                <a href="{{ url_for('logout') }}">
+                    <span class="material-icons-sharp">logout</span>
+                    <h3>Logout</h3>
+                </a>
+            </div>
+            
+        </aside>
+        <!-- End of Sidebar Section -->
+    <!-- End of Sidebar Section -->
+
+    <main>
+        <h1>Admin Profile</h1>
+        <div class="profile-card">
+            <form action="{{ url_for('upload_Adminprofile') }}" method="POST">
+                <div class="profile-photo">
+                    <img id="profile-preview" src="{{ admin.profile_pic or url_for('static', filename='profile-1.jpg') }}" alt="Admin Photo" />
+                </div>
+    
+                <div class="profile-details">
+                    <label for="employee_id"><strong>Employee ID:</strong></label>
+                    <input type="text" name="employee_id" value="{{ admin.employee_id }}"><br><br>
+    
+                    <label for="name"><strong>Name:</strong></label>
+                    <input type="text" name="name" value="{{ admin.name }}" required><br><br>
+    
+                    <label for="department"><strong>Department:</strong></label>
+                    <input type="text" name="department" value="{{ admin.department or '' }}"><br><br>
+    
+                    <label for="role"><strong>Role:</strong></label>
+                    <select name="role">
+                        <option value="employee" {% if admin.role == 'employee' %}selected{% endif %}>Employee</option>
+                        <option value="admin" {% if admin.role == 'admin' %}selected{% endif %}>Admin</option>
+                    </select><br><br>
+                </div>
+    
+                <button type="submit" class="btn-upload">Update Profile</button>
+            </form>
+        </div>
+    </main>
+    
+    
+    <!-- End of Main -->
+
+<!-- Right Section -->
+<div class="right-section" id="right-panel"></div>
+
+
+
+</div>
+
+<!-- JS files -->
+<script src="static/dashboard.js"></script>
+<script src="static/logs.js"></script>
+<script src="static/tickets.js"></script>
+<script src="static/home.js"></script>
+<script src="static/active_page.js"></script>
+<script src="static/index.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="{{ url_for('static', filename='right_paneladmin.js') }}"></script>
+<script src="static/list.js"></script>
+<script>
+    function previewImage(event) {
+      const reader = new FileReader();
+      reader.onload = function(){
+        const output = document.getElementById('profile-preview');
+        output.src = reader.result;
+      };
+      reader.readAsDataURL(event.target.files[0]);
+    }
+    </script>
+</body>
+</html>

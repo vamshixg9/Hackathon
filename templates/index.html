@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Morabu Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>   
+  <div class="login-container">
+    <div class="toggle-wrapper">
+      <label class="switch">
+        <input type="checkbox" id="darkModeSwitch">
+        <span class="slider round"></span>
+      </label>
+    </div>
+    
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Morabu Logo" class="logo" />
+
+    <h2>Login to Morabu</h2>
+
+    <!-- Stage 1: Login -->
+    <form id="loginForm">
+      <div class="input-group">
+        <label>Email</label>
+        <input type="email" id="email" required />
+      </div>
+
+      <div class="input-group password-group">
+        <label>Password</label>
+        <input type="password" id="password" required />
+      </div>
+
+      <!-- Normal login buttons -->
+      <div class="button-group" id="login-buttons">
+        <button type="submit">Login</button>
+        <button type="button" id="guestLogin" class="outline">Login as Guest</button>
+      </div>
+
+      <!-- Guest login buttons (initially hidden) -->
+      <div class="button-group" id="guest-buttons" style="display: none;">
+        <button type="button" id="continueGuest">Continue as Guest</button>
+        <button type="button" id="backToLogin" class="outline">Back</button>
+      </div>
+    </form>
+
+    <!-- Stage 2: OTP Verification -->
+    <form id="otpForm" style="display: none; margin-top: 20px;">
+      <div class="input-group">
+        <label>Enter OTP</label>
+        <input type="text" id="otp" required />
+      </div>
+      <button type="submit">Verify OTP</button>
+    </form>
+
+    <p id="message"></p>
+  </div>
+
+  <!-- Theme toggle -->
+  <script>
+    const darkModeSwitch = document.getElementById("darkModeSwitch");
+    if (localStorage.getItem("theme") === "dark") {
+      document.body.classList.add("dark");
+      darkModeSwitch.checked = true;
+    }
+    darkModeSwitch.addEventListener("change", () => {
+      document.body.classList.toggle("dark");
+      localStorage.setItem("theme", darkModeSwitch.checked ? "dark" : "light");
+    });
+  </script>
+
+  <!-- Login logic -->
+  <script>
+    const loginForm = document.getElementById("loginForm");
+    const otpForm = document.getElementById("otpForm");
+    const msg = document.getElementById("message");
+
+    const passwordGroup = document.querySelector(".password-group");
+    const loginButtons = document.getElementById("login-buttons");
+    const guestButtons = document.getElementById("guest-buttons");
+
+    let currentEmail = "";
+
+    // Normal login
+    loginForm.addEventListener("submit", function(e) {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      currentEmail = email;
+
+      fetch("/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      })
+      .then(res => {
+        if (!res.ok) {
+          return res.text().then(text => { throw new Error(text || "Login failed") });
+        }
+        return res.json();
+      })
+      .then(data => {
+        msg.style.color = data.success ? "green" : "red";
+        msg.textContent = data.message;
+        if (data.success) {
+          loginForm.style.display = "none";
+          otpForm.style.display = "block";
+        }
+      })
+      .catch(err => {
+        msg.style.color = "red";
+        msg.textContent = "Error: " + err.message;
+      });
+    });
+
+    // Guest mode toggle
+    document.getElementById("guestLogin").addEventListener("click", () => {
+      passwordGroup.style.display = "none";
+      loginButtons.style.display = "none";
+      guestButtons.style.display = "flex";
+    });
+
+    // Back to normal login
+    document.getElementById("backToLogin").addEventListener("click", () => {
+      passwordGroup.style.display = "block";
+      loginButtons.style.display = "flex";
+      guestButtons.style.display = "none";
+      msg.textContent = "";
+    });
+
+    // Guest login submission
+    document.getElementById("continueGuest").addEventListener("click", () => {
+      const email = document.getElementById("email").value;
+      if (!email) {
+        msg.style.color = "red";
+        msg.textContent = "Please enter your email for guest login.";
+        return;
+      }
+
+      currentEmail = email;
+
+      fetch("/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password: "guest" })  // dummy password
+      })
+      .then(res => {
+        if (!res.ok) {
+          return res.text().then(text => { throw new Error(text || "Login failed") });
+        }
+        return res.json();
+      })
+      .then(data => {
+        msg.style.color = data.success ? "green" : "red";
+        msg.textContent = data.message;
+        if (data.success) {
+          loginForm.style.display = "none";
+          otpForm.style.display = "block";
+        }
+      })
+      .catch(err => {
+        msg.style.color = "red";
+        msg.textContent = "Error: " + err.message;
+      });
+    });
+
+    // OTP verification
+    otpForm.addEventListener("submit", function(e) {
+      e.preventDefault();
+      const otp = document.getElementById("otp").value;
+
+      fetch("/verify_otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: currentEmail, otp })
+      })
+      .then(res => res.json())
+      .then(data => {
+        msg.style.color = data.success ? "green" : "red";
+        msg.textContent = data.message;
+        if (data.success) {
+          setTimeout(() => {
+            window.location.href = data.redirect_url;
+          }, 1500);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
