@@ -88,14 +88,24 @@ def login():
     # Check if user exists in DB
     user = User.query.filter_by(email=email).first()
     if not user:
+        office_id = None
+
+        if is_guest:
+            from models import Office
+            latest_office = Office.query.order_by(Office.id.desc()).first()
+            if latest_office:
+                office_id = latest_office.id
+
         user = User(
             email=email,
-            password_hash="placeholder_hashed_pw" if not is_guest else "guest",
+            password_hash="guest" if is_guest else "placeholder_hashed_pw",
             role="employee",
-            name="Guest" if is_guest else "Unknown"
+            name="Guest" if is_guest else "Unknown",
+            office_id=office_id  # ✅ Assign the latest office
         )
         db.session.add(user)
         db.session.commit()
+
 
     # Generate and send OTP
     otp = send_otp('diksha@morabu.com', 'uzqgy48b', email)
@@ -294,6 +304,16 @@ def timelogs():
 
 from datetime import timedelta
 
+from pytz import timezone
+jst = timezone("Asia/Tokyo")
+
+def to_jst(dt):
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=pytz.utc)
+    return dt.astimezone(jst)
+
 def calculate_total_hours(checkin, checkout):
     if checkin and checkout:
         total = checkout - checkin
@@ -301,6 +321,7 @@ def calculate_total_hours(checkin, checkout):
         minutes = remainder // 60
         return f"{int(hours):02}:{int(minutes):02}"
     return "Active" if checkin and not checkout else ""
+
 
 @app.route('/api/attendance', methods=['GET'])
 def get_attendance():
@@ -311,7 +332,7 @@ def get_attendance():
             "Date": record.date.strftime("%Y-%m-%d"),
             "ClockIn": record.checkin_time.strftime("%H:%M") if record.checkin_time else "",
             "ClockOut": record.checkout_time.strftime("%H:%M") if record.checkout_time else "",
-            "TotalHrs": calculate_total_hours(record.checkin_time, record.checkout_time),
+            "TotalHrs": calculate_total_hours(to_jst(record.checkin_time), to_jst(record.checkout_time)),
             "Location": record.location or ""
         }
         for record in attendance_records
@@ -320,58 +341,69 @@ def get_attendance():
     return jsonify({"attendance": attendance_data})
 
 
+from pytz import timezone
+from io import BytesIO
+from flask import send_file
+
 @app.route('/download/excel')
 def download_excel():
-    records = Attendance.query.all()
+    jst = timezone('Asia/Tokyo')
 
-    # Assuming you want the first user in the attendance records for now
-    # You can modify this to get the specific user by email or other identifiers
+    def format_jst(dt):
+        if dt:
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=pytz.utc)
+            return dt.astimezone(jst).strftime('%H:%M')
+        return ""
+
     user_email = session.get('email')
     user = User.query.filter_by(email=user_email).first()
-
+    records = Attendance.query.filter_by(user_id=user.id).all() 
 
     workbook = openpyxl.Workbook()
     sheet = workbook.active
     sheet.title = "Attendance Records"
 
-    # Add Title Row
-    title = "MORABU HANSHIN : TIME SHEET"
+    # Title
     sheet.merge_cells('A1:E1')
     title_cell = sheet.cell(row=1, column=1)
-    title_cell.value = title
+    title_cell.value = "MORABU HANSHIN : TIME SHEET"
     title_cell.font = Font(size=14, bold=True)
 
-    # Add User's Name on Top
+    # User Info
     user_name = user.name if user else "Unknown User"
     sheet.merge_cells('A2:E2')
     user_name_cell = sheet.cell(row=2, column=1)
     user_name_cell.value = f"User: {user_name}"
     user_name_cell.font = Font(size=12, bold=True)
 
-    # Add Headers
+    # Headers
     headers = ["Date", "Clock In", "Clock Out", "Location", "Total Hours"]
     for col, header in enumerate(headers, start=1):
         cell = sheet.cell(row=3, column=col)
         cell.value = header
         cell.font = Font(bold=True)
 
-    # Add Data Rows
+    # Rows
     for row_idx, record in enumerate(records, start=4):
         sheet.cell(row=row_idx, column=1, value=record.date.strftime("%Y-%m-%d"))
-        sheet.cell(row=row_idx, column=2, value=record.checkin_time.strftime("%H:%M") if record.checkin_time else "")
-        sheet.cell(row=row_idx, column=3, value=record.checkout_time.strftime("%H:%M") if record.checkout_time else "")
-        sheet.cell(row=row_idx, column=4, value=record.location or "")
+        sheet.cell(row=row_idx, column=2, value=format_jst(record.checkin_time))
+        sheet.cell(row=row_idx, column=3, value=format_jst(record.checkout_time))
+        office_name = record.office.name if record.office else "Unknown"
+        sheet.cell(row=row_idx, column=4, value=office_name)
+
         sheet.cell(row=row_idx, column=5, value=calculate_total_hours(record.checkin_time, record.checkout_time))
 
-    # Save to memory stream
     output = BytesIO()
     workbook.save(output)
     output.seek(0)
 
-    return send_file(output,
-                     download_name="timesheet_モラブ阪神工業株式会社.xlsx",
-                     as_attachment=True,
-                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    return send_file(
+        output,
+        download_name="timesheet_モラブ阪神工業株式会社.xlsx",
+        as_attachment=True,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
 
 
 
@@ -383,60 +415,61 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib import fonts
+from pytz import timezone
+from io import BytesIO
+from flask import send_file
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 @app.route('/download/pdf')
 def download_pdf():
-    records = Attendance.query.all()
-    filename = "timesheet_モラブ阪神工業株式会社.pdf"
-    pdf_file = BytesIO()
+    jst = timezone('Asia/Tokyo')
 
-    c = canvas.Canvas(pdf_file, pagesize=letter)
+    def format_jst(dt):
+        if dt:
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=pytz.utc)
+            return dt.astimezone(jst).strftime('%H:%M')
+        return ""
 
-    # Title and User's Name
-    c.drawString(200, 750, "MORABU HANSHIN : TIME SHEET")
-
-    # Assuming you want the first user in the attendance records for now
     user_email = session.get('email')
     user = User.query.filter_by(email=user_email).first()
+    records = Attendance.query.filter_by(user_id=user.id).all()
+    filename = "timesheet_モラブ阪神工業株式会社.pdf"
+    pdf_file = BytesIO()
+    c = canvas.Canvas(pdf_file, pagesize=letter)
 
-
-    # User's Name
+    # Title and User Info
+    c.drawString(200, 750, "MORABU HANSHIN : TIME SHEET")
+    user_email = session.get('email')
+    user = User.query.filter_by(email=user_email).first()
     user_name = user.name if user else "Unknown User"
     c.drawString(50, 730, f"User: {user_name}")
 
-    # Adjust the y_position for the headers
     y_position = 710
 
-    # Table headers
+    # Headers
     c.drawString(50, y_position, "Date")
     c.drawString(150, y_position, "Clock In")
     c.drawString(250, y_position, "Clock Out")
+    
     c.drawString(350, y_position, "Location")
     c.drawString(450, y_position, "Total Hours")
+    y_position -= 20
 
-    y_position -= 20  # Move down after headers to avoid overlap
-
-    # Loop through records and add them to the table
     for record in records:
-        # Format times as HH:MM for cleaner presentation
-        checkin_time = record.checkin_time.strftime('%H:%M') if record.checkin_time else ''
-        checkout_time = record.checkout_time.strftime('%H:%M') if record.checkout_time else ''
+        c.drawString(50, y_position, str(record.date))
+        c.drawString(150, y_position, format_jst(record.checkin_time))
+        c.drawString(250, y_position, format_jst(record.checkout_time))
+        office_name = record.office.name if record.office else "Unknown"
+        c.drawString(350, y_position, office_name)
+        c.drawString(450, y_position, str(record.total_hours))
 
-        # Draw each piece of data in a separate column with sufficient spacing
-        c.drawString(50, y_position, str(record.date))  # Date
-        c.drawString(150, y_position, checkin_time)  # Clock In (formatted time)
-        c.drawString(250, y_position, checkout_time)  # Clock Out (formatted time)
-        c.drawString(350, y_position, record.location if record.location else '')  # Location
-        c.drawString(450, y_position, str(record.total_hours))  # Total hours
+        y_position -= 20
 
-        y_position -= 20  # Move down for the next row
-
-        # If the table is getting too long, add a page break
         if y_position < 100:
-            c.showPage()  # Start a new page
-            c.setFont("NotoSansCJK-Regular", 12)  # Reset font for new page
-            y_position = 750  # Reset y_position for new page
-            # Re-add headers on new page
+            c.showPage()
+            y_position = 750
             c.drawString(50, 730, "Date")
             c.drawString(150, 730, "Clock In")
             c.drawString(250, 730, "Clock Out")
@@ -444,9 +477,15 @@ def download_pdf():
             c.drawString(450, 730, "Total Hours")
 
     c.save()
-
     pdf_file.seek(0)
-    return send_file(pdf_file, as_attachment=True, download_name=filename, mimetype='application/pdf')
+
+    return send_file(
+        pdf_file,
+        as_attachment=True,
+        download_name=filename,
+        mimetype='application/pdf'
+    )
+
 
 @app.route('/api/tickets', methods=['GET', 'POST'])
 def handle_tickets():
@@ -638,6 +677,16 @@ def right_panel_todos():
 
 @app.route('/api/user/attendance-logs')
 def user_attendance_logs():
+    from pytz import timezone
+    jst = timezone('Asia/Tokyo')
+
+    def to_jst(dt):
+        if dt is None:
+            return None
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=pytz.utc)
+        return dt.astimezone(jst).isoformat()
+
     user_email = session.get('email')
     if not user_email:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
@@ -650,7 +699,7 @@ def user_attendance_logs():
         Attendance.query
         .filter_by(user_id=user.id)
         .order_by(Attendance.date.desc())
-        .limit(30)  # adjust limit as needed
+        .limit(30)
         .all()
     )
 
@@ -659,13 +708,14 @@ def user_attendance_logs():
         'logs': [
             {
                 'date': att.date.isoformat(),
-                'checkin_time': att.checkin_time.isoformat() if att.checkin_time else None,
-                'checkout_time': att.checkout_time.isoformat() if att.checkout_time else None,
+                'checkin_time': to_jst(att.checkin_time),
+                'checkout_time': to_jst(att.checkout_time),
                 'total_hours': att.total_hours
             }
             for att in logs
         ]
     })
+
 
 
 
@@ -725,16 +775,25 @@ def admin_scan():
             attendance.checkin_time = datetime.now(tokyo_tz)
             attendance.qr_token = None
             message = "Check-in successful"
+            if not attendance.office_id:
+                attendance.office_id = attendance.user.office_id
+
 
         elif attendance.checkout_time is None:
             # Check-out flow
             attendance.checkout_time = datetime.now(tokyo_tz)
             attendance.qr_token = None
             message = "Check-out successful"
+            if not attendance.office_id:
+                attendance.office_id = attendance.user.office_id
+
 
         else:
             # Already checked in and out
             return jsonify({'success': False, 'message': 'Already checked out'}), 400
+        
+        # Ensure office_id is set based on the user's office at the time
+        
 
         db.session.commit()
         return jsonify({'success': True, 'message': message})
@@ -766,14 +825,17 @@ def generate_qr():
         new_attendance = Attendance(
             user_id=user.id,
             date=today,
-            qr_token= str(uuid.uuid4())
+            qr_token=str(uuid.uuid4()),
+            office_id=user.office_id  # ← Add this line to set office at creation
         )
+
         db.session.add(new_attendance)
         db.session.commit()
         token = new_attendance.qr_token
     else:
         # ❌ Reuse existing (not yet checked out)
         latest_attendance.qr_token = str(uuid.uuid4())
+        latest_attendance.office_id=user.office_id
         db.session.commit()
         token = latest_attendance.qr_token
 
